@@ -1,0 +1,99 @@
+<!--
+  Copyright 2018, Bart Butenaers
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<script type="text/javascript">
+    RED.nodes.registerType('onvifptz',{
+        category: 'OnVif',
+        color: '#E9967A',
+        defaults: {
+            name: {value:""},
+            xaddress: {value:"", required:true},
+            profile: {value:"", required:true},
+            pan: {value:0.0},
+            tilt: {value:0.0},
+            zoom: {value:0.0},
+            time: {value:1.0}
+        },   
+        credentials: {
+            user: {type:"text"},
+            password: {type: "password"}
+        },        
+        inputs:1,
+        outputs:1,
+        icon: "fluid.png",
+        label: function() {
+            return this.name||"OnVif PTZ";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="onvifptz">
+    <div class="form-row">
+        <label for="node-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
+        <input type="text" id="node-input-xaddress">
+    </div>
+    <div class="form-row">
+        <label for="node-input-profile"><i class="fa fa-hashtag"></i> Profile</label>
+        <input type="number" id="node-input-profile">
+    </div>
+    <div class="form-row">
+        <label for="node-input-user"><i class="fa fa-user"></i> User</label>
+        <input type="text" id="node-input-user">
+    </div>
+    <div class="form-row">
+        <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
+        <input type="password" id="node-input-password" step=".1" min="-1.0" max="1.0">
+    </div>
+    <br>
+    <div class="form-row">
+        <label for="node-input-pan"><i class="fas fa-arrows-alt-h"></i> Pan speed</label>
+        <input type="number" id="node-input-pan" step=".1" min="-1.0" max="1.0">
+    </div>
+    <div class="form-row">
+        <label for="node-input-tilt"><i class="fas fa-arrows-alt-v"></i> Tilt speed</label>
+        <input type="number" id="node-input-tilt" step=".1" min="-1.0" max="1.0">
+    </div>
+    <div class="form-row">
+        <label for="node-input-zoom"><i class="fa fa-search-plus"></i> Zoom speed</label>
+        <input type="number" id="node-input-zoom">
+    </div>
+    <div class="form-row">
+        <label for="node-input-time"><i class="fa fa-clock"></i> Time</label>
+        <input type="number" id="node-input-time">
+    </div>
+    <br>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="onvifptz">
+    <p>A node to get a snapshot image from an OnVif compatible IP camera.</p>
+    <p><strong>xAddress:</strong><br/>
+    The URL of the required endpoint on the target IP device.</p>
+    <p><strong>Profile:</strong><br/>
+    The index number of the required profile on the target IP device.</p>
+    <p><strong>User name:</strong><br/>
+    An optional user name for basic authentication on the target IP device.</p>
+    <p><strong>Password:</strong><br/>
+    An optional password for basic authentication on the target IP device.</p>
+    <p><strong>Pan speed:</strong><br/>
+    The speed of horizontal movement of the camera. When positive, the camera will turn to the right. When negative, the camera will turn to the left. If zero, the camera won't move horizontally.</p>
+    <p><strong>Tilt speed:</strong><br/>
+    The speed of vertical movement of the camera. When positive, the camera will turn upwards. When negative, the camera will turn downwards. If zero, the camera won't move vertically.</p>
+    <p><strong>Zoom speed:</strong><br/>
+    The speed of the zoom of the camera. When positive, the camera will zoom in. When negative, the camera will zoom out. If zero, the camera won't zoom.</p>
+    <p><strong>Time:</strong><br/>
+    The time interval (in seconds) that the PTZ action will take.</p>
+</script>
+

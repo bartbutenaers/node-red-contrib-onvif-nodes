@@ -1,0 +1,70 @@
+<!--
+  Copyright 2018, Bart Butenaers
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<script type="text/javascript">
+    RED.nodes.registerType('onvifsnapshot',{
+        category: 'OnVif',
+        color: '#E9967A',
+        defaults: {
+            name: {value:""},
+            xaddress: {value:"", required:true},
+            profile: {value:"", required:true}
+        },   
+        credentials: {
+            user: {type:"text"},
+            password: {type: "password"}
+        },        
+        inputs:1,
+        outputs:1,
+        icon: "fluid.png",
+        label: function() {
+            return this.name||"OnVif snapshot";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="onvifsnapshot">
+    <div class="form-row">
+        <label for="node-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
+        <input type="text" id="node-input-xaddress">
+    </div>
+    <div class="form-row">
+        <label for="node-input-profile"><i class="fa fa-hashtag"></i> Profile</label>
+        <input type="number" id="node-input-profile">
+    </div>
+    <div class="form-row">
+        <label for="node-input-user"><i class="fa fa-user"></i> User</label>
+        <input type="text" id="node-input-user">
+    </div>
+    <div class="form-row">
+        <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
+        <input type="password" id="node-input-password">
+    </div>
+    <br>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="onvifsnapshot">
+    <p>A node to get a snapshot image from an OnVif compatible IP camera.</p>
+    <p><strong>xAddress:</strong><br/>
+    The URL of the required endpoint on the target IP device.</p>
+    <p><strong>Profile:</strong><br/>
+    The index number of the required profile on the target IP device.</p>
+    <p><strong>User name:</strong><br/>
+    An optional user name for basic authentication on the target IP device.</p>
+    <p><strong>Password:</strong><br/>
+    An optional password for basic authentication on the target IP device.</p>
+</script>
+
