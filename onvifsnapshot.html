@@ -13,16 +13,12 @@
 <script type="text/javascript">
     RED.nodes.registerType('onvifsnapshot',{
         category: 'OnVif',
-        color: '#E9967A',
+        color: '#ff758d',
         defaults: {
             name: {value:""},
-            xaddress: {value:"", required:true},
+            deviceConfig: {value:"", type: "onvif_device_config"},
             profile: {value:"", required:true}
-        },   
-        credentials: {
-            user: {type:"text"},
-            password: {type: "password"}
-        },        
+        },         
         inputs:1,
         outputs:1,
         icon: "fluid.png",
@@ -34,20 +30,13 @@
 
 <script type="text/x-red" data-template-name="onvifsnapshot">
     <div class="form-row">
-        <label for="node-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
-        <input type="text" id="node-input-xaddress">
+        <label for="node-input-deviceConfig"><i class="fa fa-cog"></i> Device</label>
+        <!-- Node-Red will replace this input element by a drop-down (with available OnVif device configurations) -->
+        <input type="text" id="node-input-deviceConfig">
     </div>
     <div class="form-row">
-        <label for="node-input-profile"><i class="fa fa-hashtag"></i> Profile</label>
-        <input type="number" id="node-input-profile">
-    </div>
-    <div class="form-row">
-        <label for="node-input-user"><i class="fa fa-user"></i> User</label>
-        <input type="text" id="node-input-user">
-    </div>
-    <div class="form-row">
-        <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
-        <input type="password" id="node-input-password">
+        <label for="node-input-profile"><i class="fa fa-cogs"></i> Profile</label>
+        <input type="text" id="node-input-profile">
     </div>
     <br>
     <div class="form-row">
@@ -58,13 +47,9 @@
 
 <script type="text/x-red" data-help-name="onvifsnapshot">
     <p>A node to get a snapshot image from an OnVif compatible IP camera.</p>
-    <p><strong>xAddress:</strong><br/>
-    The URL of the required endpoint on the target IP device.</p>
+    <p><strong>Device:</strong><br/>
+    The target OnVif-compliant IP device.</p>
     <p><strong>Profile:</strong><br/>
-    The index number of the required profile on the target IP device.</p>
-    <p><strong>User name:</strong><br/>
-    An optional user name for basic authentication on the target IP device.</p>
-    <p><strong>Password:</strong><br/>
-    An optional password for basic authentication on the target IP device.</p>
+    The token of the required profile on the target IP device.</p>
 </script>
 
