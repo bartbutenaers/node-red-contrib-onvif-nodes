@@ -19,31 +19,45 @@
 
     function OnVifSnapshotNode(config) {
         RED.nodes.createNode(this, config);
+        this.profile = config.profile;
         
-        // Create an OnvifDevice object
-        if (this.credentials && this.credentials.user) {
-            this.device = new onvif.OnvifDevice({
-                xaddr: config.xaddress,
-                user : this.credentials.user,
-                pass : this.credentials.password
-            });
-        }
-        else {
-            this.device = new onvif.OnvifDevice({
-                xaddr: config.xaddress
-            });
-        }
-
         var node = this;
         
-        // Initialize the OnvifDevice object
-        node.device.init().then(() => {
-            // Set the required profile to the device, to let it know which data we want to get
-            // Remark: the device needs to be initialized first, because the available profile list need to be loaded...
-            node.device.changeProfile(parseFloat(config.profile));
-        });
+        // Retrieve the config node, where the device is configured
+        this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
+        
+        // Create an OnvifDevice object, if a device configuration has been specified
+        if (this.deviceConfig) {
+            if (this.deviceConfig.credentials && this.deviceConfig.credentials.user) {
+                this.device = new onvif.OnvifDevice({
+                    xaddr: this.deviceConfig.xaddress,
+                    user : this.deviceConfig.credentials.user,
+                    pass : this.deviceConfig.credentials.password
+                });
+            }
+            else {
+                this.device = new onvif.OnvifDevice({
+                    xaddr: this.deviceConfig.xaddress
+                });
+            }
+         
+            // Initialize the OnvifDevice object
+            node.device.init().then(() => {
+                // Set the required profile to the device, to let it know which data we want to get
+                // Remark: the device needs to be initialized first, because the available profile list need to be loaded...
+                node.device.changeProfile(node.profile);
+            });
+        }
         
         node.on("input", function(msg) {
+            if (!node.device || !node.device.getCurrentProfile()) {
+                // Avoid errors during device.fetchSnapshot, by ensuring that the device has a profile.
+                // This can be a temporary issue at flow startup, since the device initialization above can take some time...
+                console.warn('Ignoring input message because the OnVif device has no current profile');
+                return;
+            }
+            
+            // Get a snapshot image
             node.device.fetchSnapshot().then((res) => {
                 var newMsg = {};
                 newMsg.headers = res.headers;
@@ -54,10 +68,5 @@
             });
         });
     }
-    RED.nodes.registerType("onvifsnapshot",OnVifSnapshotNode,{
-        credentials: {
-            user: {type:"text"},
-            password: {type: "password"}
-        }
-    });
+    RED.nodes.registerType("onvifsnapshot",OnVifSnapshotNode);
 }
