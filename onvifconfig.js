@@ -17,59 +17,13 @@
     var settings = RED.settings;
     const onvif = require('node-onvif');
 
-    function OnVifDeviceNode(config) {
+    function OnVifDeviceConfigNode(config) {
         RED.nodes.createNode(this, config);
-        this.xaddress  = config.xaddress;
-        this.hardware  = config.hardware;
-        this.profiles  = config.profiles;
-        this.streamurl = config.streamurl;
-        
-        // Create an OnvifDevice object
-        if (this.credentials && this.credentials.user) {
-            this.device = new onvif.OnvifDevice({
-                xaddr: this.xaddress,
-                user : this.credentials.user,
-                pass : this.credentials.password
-            });
-        }
-        else {
-            this.device = new onvif.OnvifDevice({
-                xaddr: config.xaddress
-            });
-        }
-
-        var node = this;
-                
-        // Initialize the OnvifDevice object
-        this.device.init().then((info) => {
-            // Store the hardware information for later on
-            node.hardware = info;
-        }).catch((error) => {
-            console.error(error);
-        });
-
-        node.on("input", function(msg) {
-            var newMsg = {};
-            newMsg.payload = {};
-            newMsg.payload.xaddr = node.xaddress;
-            
-            if (node.hardware) {
-                newMsg.payload.hardware = node.hardware;
-            }
-
-            if (node.streamurl) {
-                newMsg.payload.streamurl = node.device.getUdpStreamUrl();
-            }
-            
-            if (node.profiles) {
-                // Get all profiles setup in the device
-                newMsg.payload.profiles = node.device.getProfileList();
-            }
-            
-            node.send(newMsg);
-        });
+        this.xaddress = config.xaddress;
+        this.name     = config.name; 
+        // Remark: user name and password are stored in this.credentials
     }
-    RED.nodes.registerType("onvifdevice",OnVifDeviceNode,{
+    RED.nodes.registerType("onvif_device_config",OnVifDeviceConfigNode,{
         credentials: {
             user: {type:"text"},
             password: {type: "password"}
