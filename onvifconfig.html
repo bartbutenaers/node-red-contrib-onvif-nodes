@@ -11,15 +11,12 @@
   limitations under the License.
 -->
 <script type="text/javascript">
-    RED.nodes.registerType('onvifdevice',{
-        category: 'OnVif',
+    RED.nodes.registerType('onvif_device_config',{
+        category: 'config',
         color: '#ff758d',
         defaults: {
-            name: {value:""},
             xaddress: {value:"", required:true},
-            hardware: {value:true},
-            profiles: {value:true},
-            streamurl: {value:true}
+            name: {value:""}
         },   
         credentials: {
             user: {type:"text"},
@@ -29,56 +26,37 @@
         outputs:1,
         icon: "fluid.png",
         label: function() {
-            return this.name||"OnVif device";
+            // The (unique) name will also be displayed in the drop-down list, used by the related nodes
+            return this.name || this.xaddress || "OnVif device config";
         }
     });
 </script>
 
-<script type="text/x-red" data-template-name="onvifdevice">
+<script type="text/x-red" data-template-name="onvif_device_config">
     <div class="form-row">
-        <label for="node-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
-        <input type="text" id="node-input-xaddress">
+        <label for="node-config-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
+        <input type="text" id="node-config-input-xaddress">
     </div>
     <div class="form-row">
-        <label for="node-input-user"><i class="fa fa-user"></i> User</label>
-        <input type="text" id="node-input-user">
+        <label for="node-config-input-user"><i class="fa fa-user"></i> User</label>
+        <input type="text" id="node-config-input-user">
     </div>
     <div class="form-row">
-        <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
-        <input type="password" id="node-input-password">
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-hardware" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-hardware" style="width: auto">Get hardware information</label>
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-profiles" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-profiles" style="width: auto">Get available profiles</label>
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-streamurl" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-streamurl" style="width: auto">Get UDP stream URL</label>
+        <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+        <input type="password" id="node-config-input-password">
     </div>
     <br>
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="onvifdevice">
-    <p>A node to get extra information about an OnVif compatible IP device.</p>
+<script type="text/x-red" data-help-name="onvif_device_config">
     <p><strong>xAddress:</strong><br/>
     The URL of the required endpoint on the target IP device.</p>
     <p><strong>User name:</strong><br/>
     An optional user name for basic authentication on the target IP device.</p>
     <p><strong>Password:</strong><br/>
     An optional password for basic authentication on the target IP device.</p>
-    <p><strong>Get hardware information:</strong><br/>
-    If selected, the hardware information of the target IP device will be send.</p>
-    <p><strong>Get available profiles:</strong><br/>
-    If selected, all the available profiles of the target IP device will be send.</p>
-    <p><strong>Get UDP stream URL:</strong><br/>
-    If selected, the UDP stream URL of the target IP device will be send.</p>
 </script>
-
