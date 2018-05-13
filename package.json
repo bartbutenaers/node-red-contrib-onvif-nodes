@@ -1,0 +1,30 @@
+{
+    "name"         : "node-red-contrib-onvif",
+    "version"      : "0.0.1",
+    "description"  : "Node Red nodes for communicating with OnVif compliant IP devices",
+    "dependencies": {
+       "node-onvif": "0.1.4"
+    },
+    "author": {
+        "name": "Bart Butenaers"
+    },
+    "license": "Apache-2.0",
+    "keywords": [ "node-red", "onvif", "ip", "camera", "snapshot", "ptz", "rtsp", "stream", "surveillance" ],
+    "bugs": {
+        "url": "https://github.com/bartbutenaers/node-red-contrib-onvif/issues"
+    },
+    "homepage": "https://github.com/bartbutenaers/node-red-contrib-onvif",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bartbutenaers/node-red-contrib-onvif.git"
+    },
+    "node-red"     : {
+        "nodes": {
+            "onvifsnapshot": "onvifsnapshot.js",
+            "onvifptz": "onvifptz.js",
+            "onvifdiscovery": "onvifdiscovery.js",
+            "onvifdevice": "onvifdevice.js",
+            "onvif_device_config": "onvif_device_config.js",
+        }
+    }
+}
