@@ -19,93 +19,120 @@
 
     function OnVifPtzNode(config) {
         RED.nodes.createNode(this, config);
-        this.pan  = parseFloat(config.pan);
-        this.tilt = parseFloat(config.tilt);
-        this.zoom = parseFloat(config.zoom);
-        this.time = config.time;
-        
-        // Create an OnvifDevice object
-        if (this.credentials && this.credentials.user) {
-            this.device = new onvif.OnvifDevice({
-                xaddr: config.xaddress,
-                user : this.credentials.user,
-                pass : this.credentials.password
-            });
-        }
-        else {
-            this.device = new onvif.OnvifDevice({
-                xaddr: config.xaddress
-            });
-        }
+        this.panSpeed   = parseFloat(config.panSpeed);
+        this.tiltSpeed  = parseFloat(config.tiltSpeed);
+        this.zoomSpeed  = parseFloat(config.zoomSpeed);
+        this.time       = parseInt(config.time);
+        this.profile    = config.profile;
+        this.continuous = config.continuous;
         
         var node = this;
-
-        // Initialize the OnvifDevice object
-        node.device.init().then(() => {
-            // Set the required profile to the device, to let it know which data we want to get.
-            // Remark: the device needs to be initialized first, because the available profile list need to be loaded...
-            node.device.changeProfile(parseFloat(config.profile));
-        });
+        
+        // Retrieve the config node, where the device is configured
+        this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
+        
+        // Create an OnvifDevice object, if a device configuration has been specified
+        if (this.deviceConfig) {
+            if (this.deviceConfig.credentials && this.deviceConfig.credentials.user) {
+                this.device = new onvif.OnvifDevice({
+                    xaddr: this.deviceConfig.xaddress,
+                    user : this.deviceConfig.credentials.user,
+                    pass : this.deviceConfig.credentials.password
+                });
+            }
+            else {
+                this.device = new onvif.OnvifDevice({
+                    xaddr: this.deviceConfig.xaddress
+                });
+            }
+         
+            // Initialize the OnvifDevice object
+            node.device.init().then(() => {
+                // Set the required profile to the device, to let it know which data we want to get
+                // Remark: the device needs to be initialized first, because the available profile list need to be loaded...
+                node.device.changeProfile(node.profile);
+            });
+        }
                 
         node.on("input", function(msg) {
-            var pan  = node.pan;
-            var tilt = node.tilt;
-            var zoom = node.zoom;
+            var panSpeed  = node.panSpeed;
+            var tiltSpeed = node.tiltSpeed;
+            var zoomSpeed = node.zoomSpeed;
             
-            // Check whether a 'pan' value is specified in the input message
-            if (msg.hasOwnProperty('pan') || msg.pan < -1.0 || msg.pan > 1.0) {
-                if (isNaN(msg.pan)) {
-                    console.error('The msg.pan value should be a number between -1.0 and 1.0');
+            if (!node.device.getCurrentProfile()) {
+                // Avoid errors during ptzMove, by ensuring that the device has a profile.
+                // This can be a temporary issue at flow startup, since the device initialization above can take some time...
+                console.warn('Ignoring input message because the OnVif device has no current profile');
+                return;
+            }
+            
+            // Check whether a 'pan_speed' value is specified in the input message
+            if (msg.hasOwnProperty('pan_speed') || msg.pan_speed < -1.0 || msg.pan_speed > 1.0) {
+                if (isNaN(msg.pan_speed)) {
+                    console.error('The msg.pan_speed value should be a number between -1.0 and 1.0');
                 }
                 else {
-                    pan = msg.pan;
+                    panSpeed = msg.pan_speed;
                 }
             }
             
-            // Check whether a 'tilt' value is specified in the input message
-            if (msg.hasOwnProperty('tilt') || msg.tilt < -1.0 || msg.tilt > 1.0) {
-                if (isNaN(msg.tilt)) {
-                    console.error('The msg.tilt value should be a number between -1.0 and 1.0');
+            // Check whether a 'tilt_speed' value is specified in the input message
+            if (msg.hasOwnProperty('tilt_speed') || msg.tilt_speed < -1.0 || msg.tilt_speed > 1.0) {
+                if (isNaN(msg.tilt_speed)) {
+                    console.error('The msg.tilt_speed value should be a number between -1.0 and 1.0');
                 }
                 else {
-                    tilt = msg.tilt;
+                    tiltSpeed = msg.tilt_speed;
                 }
             }
             
-            // Check whether a 'zoom' value is specified in the input message
-            if (msg.hasOwnProperty('zoom')) {
-                if (isNaN(msg.zoom) || msg.zoom < -1.0 || msg.zoom > 1.0) {
-                    console.error('The msg.zoom value should be a number between -1.0 and 1.0');
+            // Check whether a 'zoom_speed' value is specified in the input message
+            if (msg.hasOwnProperty('zoom_speed')) {
+                if (isNaN(msg.zoom_speed) || msg.zoom_speed < -1.0 || msg.zoom_speed > 1.0) {
+                    console.error('The msg.zoom_speed value should be a number between -1.0 and 1.0');
                 }
                 else {
-                    zoom = msg.zoom;
+                    zoomSpeed = msg.zoom_speed;
                 }
             }
             
             // Make sure the values are between -1.0 and 1.0
-            pan  = Math.min(Math.max(pan, -1.0), 1.0);
-            tilt = Math.min(Math.max(tilt, -1.0), 1.0);
-            zoom = Math.min(Math.max(zoom, -1.0), 1.0);
-                        
-            var params = {
-                'speed': {
-                    x: pan,
-                    y: tilt,
-                    z: zoom
-                },
-                'timeout': node.time
-            };
-            
-            // Move the camera according to the requested parameters
-            node.device.ptzMove(params).catch((error) => {
-                console.error(error);
-            });
+            panSpeed  = Math.min(Math.max(panSpeed, -1.0), 1.0);
+            tiltSpeed = Math.min(Math.max(tiltSpeed, -1.0), 1.0);
+            zoomSpeed = Math.min(Math.max(zoomSpeed, -1.0), 1.0);       
+         
+            if (node.continuous) {
+                var params = {
+                    'ProfileToken': node.profile,
+                    'Velocity': {
+                        x: panSpeed,
+                        y: tiltSpeed,
+                        z: zoomSpeed
+                    },
+                    'Timeout': node.time 
+                };
+
+                // Move the camera continuously 
+                node.device.services.ptz.continuousMove(params).catch((error) => {
+                    console.error(error);
+                });
+            }
+            else {
+                var params = {
+                    'speed': {
+                        x: panSpeed,
+                        y: tiltSpeed,
+                        z: zoomSpeed
+                    },
+                    'timeout': node.time
+                };
+                
+                // Move the camera once with the specified speed(s) and during the specified time
+                node.device.ptzMove(params).catch((error) => {
+                    console.error(error);
+                });
+            }
         });
     }
-    RED.nodes.registerType("onvifptz",OnVifPtzNode,{
-        credentials: {
-            user: {type:"text"},
-            password: {type: "password"}
-        }
-    });
+    RED.nodes.registerType("onvifptz",OnVifPtzNode);
 }
