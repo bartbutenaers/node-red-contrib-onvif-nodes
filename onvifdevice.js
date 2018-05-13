@@ -19,39 +19,51 @@
 
     function OnVifDeviceNode(config) {
         RED.nodes.createNode(this, config);
-        this.xaddress  = config.xaddress;
         this.hardware  = config.hardware;
         this.profiles  = config.profiles;
         this.streamurl = config.streamurl;
         
-        // Create an OnvifDevice object
-        if (this.credentials && this.credentials.user) {
-            this.device = new onvif.OnvifDevice({
-                xaddr: this.xaddress,
-                user : this.credentials.user,
-                pass : this.credentials.password
-            });
-        }
-        else {
-            this.device = new onvif.OnvifDevice({
-                xaddr: config.xaddress
-            });
-        }
-
         var node = this;
-                
-        // Initialize the OnvifDevice object
-        this.device.init().then((info) => {
-            // Store the hardware information for later on
-            node.hardware = info;
-        }).catch((error) => {
-            console.error(error);
-        });
+        
+        // Retrieve the config node, where the device is configured
+        this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
+
+        // Create an OnvifDevice object, if a device configuration has been specified
+        if (this.deviceConfig) {
+            if (this.deviceConfig.credentials && this.deviceConfig.credentials.user) {
+                this.device = new onvif.OnvifDevice({
+                    xaddr: this.deviceConfig.xaddress,
+                    user : this.deviceConfig.credentials.user,
+                    pass : this.deviceConfig.credentials.password
+                });
+            }
+            else {
+                this.device = new onvif.OnvifDevice({
+                    xaddr: this.deviceConfig.xaddress
+                });
+            }
+                 
+            // Initialize the OnvifDevice object
+            this.device.init().then((info) => {
+                // Store the hardware information for later on
+                node.hardware = info;
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
 
         node.on("input", function(msg) {
             var newMsg = {};
             newMsg.payload = {};
-            newMsg.payload.xaddr = node.xaddress;
+            
+            if (!node.device || !node.device.getCurrentProfile()) {
+                // Avoid errors during device.getXXXX, by ensuring that the device has a profile.
+                // This can be a temporary issue at flow startup, since the device initialization above can take some time...
+                console.warn('Ignoring input message because the OnVif device has no current profile');
+                return;
+            }
+            
+            newMsg.payload.xaddr = this.deviceConfig.xaddress;
             
             if (node.hardware) {
                 newMsg.payload.hardware = node.hardware;
@@ -69,10 +81,5 @@
             node.send(newMsg);
         });
     }
-    RED.nodes.registerType("onvifdevice",OnVifDeviceNode,{
-        credentials: {
-            user: {type:"text"},
-            password: {type: "password"}
-        }
-    });
+    RED.nodes.registerType("onvifdevice",OnVifDeviceNode);
 }
