@@ -13,20 +13,17 @@
 <script type="text/javascript">
     RED.nodes.registerType('onvifptz',{
         category: 'OnVif',
-        color: '#E9967A',
+        color: '#ff758d',
         defaults: {
             name: {value:""},
-            xaddress: {value:"", required:true},
+            deviceConfig: {value:"", type: "onvif_device_config"},
             profile: {value:"", required:true},
-            pan: {value:0.0},
-            tilt: {value:0.0},
-            zoom: {value:0.0},
-            time: {value:1.0}
-        },   
-        credentials: {
-            user: {type:"text"},
-            password: {type: "password"}
-        },        
+            panSpeed: {value:0.0},
+            tiltSpeed: {value:0.0},
+            zoomSpeed: {value:0.0},
+            time: {value:1.0},
+            continuous: {value:false}
+        },          
         inputs:1,
         outputs:1,
         icon: "fluid.png",
@@ -38,37 +35,36 @@
 
 <script type="text/x-red" data-template-name="onvifptz">
     <div class="form-row">
-        <label for="node-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
-        <input type="text" id="node-input-xaddress">
-    </div>
-    <div class="form-row">
-        <label for="node-input-profile"><i class="fa fa-hashtag"></i> Profile</label>
-        <input type="number" id="node-input-profile">
-    </div>
-    <div class="form-row">
-        <label for="node-input-user"><i class="fa fa-user"></i> User</label>
-        <input type="text" id="node-input-user">
-    </div>
-    <div class="form-row">
-        <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
-        <input type="password" id="node-input-password" step=".1" min="-1.0" max="1.0">
+        <label for="node-input-deviceConfig"><i class="fa fa-cog"></i> Device</label>
+        <!-- Node-Red will replace this input element by a drop-down (with available OnVif device configurations) -->
+        <input type="text" id="node-input-deviceConfig">
     </div>
     <br>
     <div class="form-row">
-        <label for="node-input-pan"><i class="fas fa-arrows-alt-h"></i> Pan speed</label>
-        <input type="number" id="node-input-pan" step=".1" min="-1.0" max="1.0">
+        <label for="node-input-profile"><i class="fa fa-hashtag"></i> Profile</label>
+        <input type="text" id="node-input-profile">
+    </div>
+    <br>
+    <div class="form-row">
+        <label for="node-input-panSpeed"><i class="fas fa-arrows-alt-h"></i> Pan speed</label>
+        <input type="number" id="node-input-panSpeed" step=".1" min="-1.0" max="1.0">
     </div>
     <div class="form-row">
-        <label for="node-input-tilt"><i class="fas fa-arrows-alt-v"></i> Tilt speed</label>
-        <input type="number" id="node-input-tilt" step=".1" min="-1.0" max="1.0">
+        <label for="node-input-tiltSpeed"><i class="fas fa-arrows-alt-v"></i> Tilt speed</label>
+        <input type="number" id="node-input-tiltSpeed" step=".1" min="-1.0" max="1.0">
     </div>
     <div class="form-row">
-        <label for="node-input-zoom"><i class="fa fa-search-plus"></i> Zoom speed</label>
-        <input type="number" id="node-input-zoom">
+        <label for="node-input-zoomSpeed"><i class="fa fa-search-plus"></i> Zoom speed</label>
+        <input type="number" id="node-input-zoomSpeed">
     </div>
     <div class="form-row">
         <label for="node-input-time"><i class="fa fa-clock"></i> Time</label>
         <input type="number" id="node-input-time">
+    </div>
+    <br>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-continuous" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-continuous" style="width: auto">Move continuously (overrides time)</label>
     </div>
     <br>
     <div class="form-row">
@@ -79,14 +75,10 @@
 
 <script type="text/x-red" data-help-name="onvifptz">
     <p>A node to get a snapshot image from an OnVif compatible IP camera.</p>
-    <p><strong>xAddress:</strong><br/>
-    The URL of the required endpoint on the target IP device.</p>
+    <p><strong>Device:</strong><br/>
+    The target OnVif-compliant IP device.</p>
     <p><strong>Profile:</strong><br/>
-    The index number of the required profile on the target IP device.</p>
-    <p><strong>User name:</strong><br/>
-    An optional user name for basic authentication on the target IP device.</p>
-    <p><strong>Password:</strong><br/>
-    An optional password for basic authentication on the target IP device.</p>
+    The token of the required profile on the target IP device.  The movement range (minimum and maximum position) are specified in each profile.</p>
     <p><strong>Pan speed:</strong><br/>
     The speed of horizontal movement of the camera. When positive, the camera will turn to the right. When negative, the camera will turn to the left. If zero, the camera won't move horizontally.</p>
     <p><strong>Tilt speed:</strong><br/>
@@ -95,5 +87,7 @@
     The speed of the zoom of the camera. When positive, the camera will zoom in. When negative, the camera will zoom out. If zero, the camera won't zoom.</p>
     <p><strong>Time:</strong><br/>
     The time interval (in seconds) that the PTZ action will take.</p>
+    <p><strong>Move continuously:</strong><br/>
+    When selected, the camera will move continuously (conform the specified speeds).</p>
 </script>
 
