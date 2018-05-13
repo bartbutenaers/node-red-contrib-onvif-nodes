@@ -1,0 +1,84 @@
+<!--
+  Copyright 2018, Bart Butenaers
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<script type="text/javascript">
+    RED.nodes.registerType('onvifdevice',{
+        category: 'OnVif',
+        color: '#ff758d',
+        defaults: {
+            name: {value:""},
+            xaddress: {value:"", required:true},
+            hardware: {value:true},
+            profiles: {value:true},
+            streamurl: {value:true}
+        },   
+        credentials: {
+            user: {type:"text"},
+            password: {type: "password"}
+        },        
+        inputs:1,
+        outputs:1,
+        icon: "fluid.png",
+        label: function() {
+            return this.name||"OnVif device";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="onvifdevice">
+    <div class="form-row">
+        <label for="node-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
+        <input type="text" id="node-input-xaddress">
+    </div>
+    <div class="form-row">
+        <label for="node-input-user"><i class="fa fa-user"></i> User</label>
+        <input type="text" id="node-input-user">
+    </div>
+    <div class="form-row">
+        <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
+        <input type="password" id="node-input-password">
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-hardware" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-hardware" style="width: auto">Get hardware information</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-profiles" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-profiles" style="width: auto">Get available profiles</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-streamurl" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-streamurl" style="width: auto">Get UDP stream URL</label>
+    </div>
+    <br>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="onvifdevice">
+    <p>A node to get extra information about an OnVif compatible IP device.</p>
+    <p><strong>xAddress:</strong><br/>
+    The URL of the required endpoint on the target IP device.</p>
+    <p><strong>User name:</strong><br/>
+    An optional user name for basic authentication on the target IP device.</p>
+    <p><strong>Password:</strong><br/>
+    An optional password for basic authentication on the target IP device.</p>
+    <p><strong>Get hardware information:</strong><br/>
+    If selected, the hardware information of the target IP device will be send.</p>
+    <p><strong>Get available profiles:</strong><br/>
+    If selected, all the available profiles of the target IP device will be send.</p>
+    <p><strong>Get UDP stream URL:</strong><br/>
+    If selected, the UDP stream URL of the target IP device will be send.</p>
+</script>
+
