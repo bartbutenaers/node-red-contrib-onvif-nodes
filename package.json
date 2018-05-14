@@ -3,7 +3,8 @@
     "version"      : "0.0.1",
     "description"  : "Node Red nodes for communicating with OnVif compliant IP devices",
     "dependencies": {
-       "node-onvif": "0.1.4"
+       "node-onvif": "0.1.4",
+       "promises-all": "1.0.0"
     },
     "author": {
         "name": "Bart Butenaers"
