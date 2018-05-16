@@ -29,8 +29,12 @@
                 
                 switch (command) {
                     case 'START':
+                        node.status({fill:"yellow",shape:"dot",text:"discovering"});
+                        
                         // Start discovery of the ONVIF network devices
                         onvif.startProbe().then((device_info_list) => {
+                            node.status({fill:"green",shape:"dot",text: "completed"});
+                            
                             if (node.separate) {
                                 // Send a separate output message for every discovered OnVif-compliant IP device
                                 device_info_list.forEach((info) => {
@@ -45,6 +49,7 @@
                         break;
                     case 'STOP':
                         onvif.stopProbe().then(() => {
+                            node.status({fill:"green",shape:"dot",text: "stopped"});
                             console.log('Aborted the OnVif discovery process.');
                         }).catch((error) => {
                             console.error(error);
