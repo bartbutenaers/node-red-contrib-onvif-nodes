@@ -17,9 +17,7 @@
         defaults: {
             name: {value:""},
             deviceConfig: {value:"", type: "onvif_device_config"},
-            hardware: {value:true},
-            profiles: {value:true},
-            streamurl: {value:true}
+            action: {value:"", required: false}
         },          
         inputs:1,
         outputs:1,
@@ -38,16 +36,23 @@
     </div>
     <br>
     <div class="form-row">
-        <input type="checkbox" id="node-input-hardware" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-hardware" style="width: auto">Get hardware information</label>
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-profiles" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-profiles" style="width: auto">Get available profiles</label>
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-streamurl" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-streamurl" style="width: auto">Get UDP stream URL</label>
+        <label for="node-input-action"><i class="fa fa-wrench"></i> Action</label>
+        <select id="node-input-action">
+            <option value=""></option>
+            <option value="hardware">Hardware information</option>
+            <option value="profiles">Available profiles</option>
+            <option value="services">Available services</option>
+            <option value="streamurl">UDP stream URL</option>           
+            <option value="hostname">Hostname information</option>
+            <option value="dns">DNS</option>
+            <option value="interfaces">Network interfaces</option>
+            <option value="protocols">Network protocols</option>
+            <option value="gateway">Network default gateway</option>
+            <option value="datetime">System date and time</option>
+            <option value="relayoutputs">Relay outputs</option>              
+            <option value="ntp">NTP information</option> 
+            <option value="dynamicdns">Dynamic DNS</option>
+        </select>
     </div>
     <br>
     <div class="form-row">
@@ -60,10 +65,7 @@
     <p>A node to get extra information about an OnVif compatible IP device.</p>
     <p><strong>Device:</strong><br/>
     The target OnVif-compliant IP device.</p>
-    <p><strong>Get hardware information:</strong><br/>
-    If selected, the hardware information of the target IP device will be send.</p>
-    <p><strong>Get available profiles:</strong><br/>
-    If selected, all the available profiles of the target IP device will be send.</p>
-    <p><strong>Get UDP stream URL:</strong><br/>
-    If selected, the UDP stream URL of the target IP device will be send.</p>
+    <p><strong>Action:</strong><br/>
+    The action that needs to be executed on the target device.  When no action is selected, the action should be specified in the <code>msg.action</code> field of the input message.</p>
 </script>
+
