@@ -19,9 +19,7 @@
 
     function OnVifDeviceNode(config) {
         RED.nodes.createNode(this, config);
-        this.hardware  = config.hardware;
-        this.profiles  = config.profiles;
-        this.streamurl = config.streamurl;
+        this.action  = config.action;
         
         var node = this;
         
@@ -44,17 +42,19 @@
             }
                  
             // Initialize the OnvifDevice object
-            this.device.init().then((info) => {
-                // Store the hardware information for later on
-                node.hardware = info;
+            this.device.init().then(() => {
+                node.status({fill:"green",shape:"dot",text:"connected"});
             }).catch((error) => {
                 console.error(error);
+                node.status({fill:"red",shape:"ring",text:"not connected"});
             });
         }
+        else {
+            node.status({fill:"red",shape:"ring",text:"no device"});
+        }
 
-        node.on("input", function(msg) {
+        node.on("input", function(msg) {  
             var newMsg = {};
-            newMsg.payload = {};
             
             if (!node.device || !node.device.getCurrentProfile()) {
                 // Avoid errors during device.getXXXX, by ensuring that the device has a profile.
@@ -63,22 +63,119 @@
                 return;
             }
             
-            newMsg.payload.xaddr = this.deviceConfig.xaddress;
+            var action = node.action || msg.action;
             
-            if (node.hardware) {
-                newMsg.payload.hardware = node.hardware;
-            }
-
-            if (node.streamurl) {
-                newMsg.payload.streamurl = node.device.getUdpStreamUrl();
+            if (!action) {
+                console.warn('When no action specified in the node, it should be specified in the msg.action');
+                return;
             }
             
-            if (node.profiles) {
-                // Get all profiles setup in the device
-                newMsg.payload.profiles = node.device.getProfileList();
-            }
+            newMsg.xaddr = this.deviceConfig.xaddress;
+            newMsg.action = action;
             
-            node.send(newMsg);
+            switch (action) {
+                case "hardware":
+                    newMsg.payload = node.device.getInformation();
+                    node.send(newMsg);
+                    break;
+                case "profiles":
+                    newMsg.payload = node.device.getProfileList();
+                    node.send(newMsg);
+                    break;
+                case "streamurl":
+                    newMsg.payload = node.device.getUdpStreamUrl();
+                    node.send(newMsg);
+                    break;
+                case "hostname":
+                    node.device.services.device.getHostname().then((result) => {
+                        newMsg.payload = result.data.GetHostnameResponse.HostnameInformation;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;
+                case "dns":
+                    node.device.services.device.getDNS().then((result) => {
+                        newMsg.payload = result.data.GetDNSResponse.DNSInformation.DNSFromDHCP;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;
+                case "interfaces":
+                    node.device.services.device.getNetworkInterfaces().then((result) => {
+                        newMsg.payload = result.data.GetNetworkInterfacesResponse.NetworkInterfaces;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;
+                case "protocols":
+                    node.device.services.device.getNetworkProtocols().then((result) => {
+                        newMsg.payload = result.data.GetNetworkProtocolsResponse.NetworkProtocols;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;                    
+                case "gateway":
+                    node.device.services.device.getNetworkDefaultGateway().then((result) => {
+                        newMsg.payload = result.data.GetNetworkDefaultGatewayResponse.NetworkGateway;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;                      
+                case "datetime":
+                    node.device.services.device.getSystemDateAndTime().then((result) => {
+                        newMsg.payload = result.data.GetSystemDateAndTimeResponse.SystemDateAndTime;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;                     
+                case "relayoutputs":
+                    node.device.services.device.getRelayOutputs().then((result) => {
+                        newMsg.payload = result.data.GetRelayOutputsResponse;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;                     
+                case "ntp":
+                    node.device.services.device.getNTP().then((result) => {
+                        newMsg.payload = result.data.GetNTPResponse.NTPInformation;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;  
+                case "dynamicdns":
+                    node.device.services.device.getDynamicDNS().then((result) => {
+                        newMsg.payload = result.data.GetDynamicDNSResponse.DynamicDNSInformation;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                    });
+                    break;  
+                case "services":
+                    var params = {
+                        'IncludeCapability': true
+                    };
+                
+                    promise = node.device.services.device.getServices(params).then((result) => {
+                        newMsg.payload = result;
+                        node.send(newMsg);
+                    }).catch((error) => {
+                        console.error(error);
+                        // TODO Hier komen we steeds met deze fout:
+                        //    Error: 500 Internal Server Error - Method Not Found
+                        //    at parse.then (/home/pi/.node-red/node_modules/node-onvif/lib/modules/soap.js:144:16)
+                        //    at process._tickCallback (internal/process/next_tick.js:109:7)
+                        
+                    });
+                    break;
+            }
         });
     }
     RED.nodes.registerType("onvifdevice",OnVifDeviceNode);
