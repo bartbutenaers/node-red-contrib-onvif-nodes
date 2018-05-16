@@ -28,6 +28,8 @@
         
         // Create an OnvifDevice object, if a device configuration has been specified
         if (this.deviceConfig) {
+            node.status({fill:"yellow",shape:"dot",text:"initializing"});
+            
             if (this.deviceConfig.credentials && this.deviceConfig.credentials.user) {
                 this.device = new onvif.OnvifDevice({
                     xaddr: this.deviceConfig.xaddress,
@@ -43,10 +45,25 @@
          
             // Initialize the OnvifDevice object
             node.device.init().then(() => {
-                // Set the required profile to the device, to let it know which data we want to get
-                // Remark: the device needs to be initialized first, because the available profile list need to be loaded...
-                node.device.changeProfile(node.profile);
+                // Check whether an OnvifServiceMedia object is available
+                var media = node.device.services.media;
+                if (media) {
+                    // Set the required profile to the device, to let it know which data we want to get
+                    // Remark: the device needs to be initialized first, because the available profile list need to be loaded...
+                    node.device.changeProfile(node.profile); 
+                    node.status({fill:"green",shape:"dot",text:"connected"});
+                }
+                else {
+                    console.error('The ONVIF device does not offer a media service.');
+                    node.status({fill:"red",shape:"dot",text:"no media support"});
+                }
+            }).catch((error) => {
+                console.error(error);
+                node.status({fill:"red",shape:"ring",text:"not connected"});
             });
+        }
+        else {
+            node.status({fill:"red",shape:"ring",text:"no device"});
         }
         
         node.on("input", function(msg) {
