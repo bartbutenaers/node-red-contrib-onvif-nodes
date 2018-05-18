@@ -39,19 +39,28 @@
         <label for="node-input-action"><i class="fa fa-wrench"></i> Action</label>
         <select id="node-input-action">
             <option value=""></option>
-            <option value="hardware">Hardware information</option>
-            <option value="profiles">Available profiles</option>
-            <option value="services">Available services</option>
-            <option value="streamurl">UDP stream URL</option>           
-            <option value="hostname">Hostname information</option>
-            <option value="dns">DNS</option>
-            <option value="interfaces">Network interfaces</option>
-            <option value="protocols">Network protocols</option>
-            <option value="gateway">Network default gateway</option>
-            <option value="datetime">System date and time</option>
-            <option value="relayoutputs">Relay outputs</option>              
-            <option value="ntp">NTP information</option> 
-            <option value="dynamicdns">Dynamic DNS</option>
+            <option value="getInformation">Get hardware</option>
+            <option value="getProfileList">Get profiles</option>
+            <option value="getServices">Get services</option>
+            <option value="getUdpStreamUrl">Get UDP stream URL</option>           
+            <option value="getHostname">Get host name</option>
+            <option value="getDNS">Get DNS</option>
+            <option value="getNetworkInterfaces">Get network interfaces</option>
+            <option value="getNetworkProtocols">Get network protocols</option>
+            <option value="getNetworkDefaultGateway">Get network default gateway</option>
+            <option value="getSystemDateAndTime">Get system date and time</option>
+            <option value="getRelayOutputs">Get relay outputs</option>              
+            <option value="getNTP">Get NTP information</option> 
+            <option value="getDynamicDNS">Get dynamic DNS</option>
+            <option value="getCurrentProfile">Get current profile</option>
+            <option value="getCapabilities">Get capabilities</option>
+            <option value="getWsdlUrl">Get WSDL URL</option>
+            <option value="getDiscoveryMode">Get discovery mode</option>
+            <option value="getScopes">Get scopes</option>
+            <option value="reboot">Reboot</option>
+            <option value="getUsers">Get users</option>
+            <option value="getZeroConfiguration">Get zero configuration</option>
+            <option value="getServiceCapabilities">Get service capabilities</option>
         </select>
     </div>
     <br>
@@ -68,4 +77,3 @@
     <p><strong>Action:</strong><br/>
     The action that needs to be executed on the target device.  When no action is selected, the action should be specified in the <code>msg.action</code> field of the input message.</p>
 </script>
-
