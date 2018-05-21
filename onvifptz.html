@@ -18,11 +18,11 @@
             name: {value:""},
             deviceConfig: {value:"", type: "onvif_device_config"},
             profile: {value:"", required:true},
+            action: {value:""},
             panSpeed: {value:0.0},
             tiltSpeed: {value:0.0},
             zoomSpeed: {value:0.0},
-            time: {value:1.0},
-            continuous: {value:false}
+            time: {value:1.0}
         },          
         inputs:1,
         outputs:1,
@@ -44,6 +44,23 @@
         <label for="node-input-profile"><i class="fa fa-hashtag"></i> Profile</label>
         <input type="text" id="node-input-profile">
     </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-wrench"></i> Action</label>
+        <select id="node-input-action">
+            <option value=""></option>
+            <option value="move">Move</option>
+            <option value="continuous">Continuous move</option>
+            <option value="gotoHomePosition">Goto home position</option>
+            <option value="setHomePosition">Set home position</option>
+            <option value="getPresets">Get Presets</option>
+            <option value="getNodes">Get Nodes</option>
+            <option value="getNode">Get Node</option>
+            <option value="getConfigurations">Get Configurations</option>
+            <option value="getConfiguration">Get Configuration</option>
+            <option value="getConfigurationOptions">Get Configuration Options</option>
+            <option value="getStatus">Get status</option>
+        </select>
+    </div>
     <br>
     <div class="form-row">
         <label for="node-input-panSpeed"><i class="fas fa-arrows-alt-h"></i> Pan speed</label>
@@ -60,11 +77,6 @@
     <div class="form-row">
         <label for="node-input-time"><i class="fa fa-clock"></i> Time</label>
         <input type="number" id="node-input-time">
-    </div>
-    <br>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-continuous" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-continuous" style="width: auto">Move continuously (overrides time)</label>
     </div>
     <br>
     <div class="form-row">
@@ -90,4 +102,3 @@
     <p><strong>Move continuously:</strong><br/>
     When selected, the camera will move continuously (conform the specified speeds).</p>
 </script>
-
