@@ -15,54 +15,94 @@
  **/
  module.exports = function(RED) {
     var settings = RED.settings;
-    const onvif = require('node-onvif');
+    const onvif = require('onvif');
 
     function OnVifDiscoveryNode(config) {
         RED.nodes.createNode(this, config);
         this.separate = config.separate;
+        this.discovering = false;
+        this.timer = null;
+        this.counter = 0;
 
         var node = this;
         
-        node.on("input", function(msg) {
-            if (typeof msg.payload == 'string' || msg.payload instanceof String) { 
-                var command = msg.payload.toUpperCase();
-                
-                switch (command) {
-                    case 'START':
-                        node.status({fill:"yellow",shape:"dot",text:"discovering"});
+        // Simplify the result, so it becomes more easy to parse it with Node-Red
+        function simplifyResult(result) {
+            // Reduce the property depth
+            probeMatch = result.probeMatches.probeMatch;
                         
-                        // Start discovery of the ONVIF network devices
-                        onvif.startProbe().then((device_info_list) => {
-                            node.status({fill:"green",shape:"dot",text: "completed"});
-                            
-                            if (node.separate) {
-                                // Send a separate output message for every discovered OnVif-compliant IP device
-                                device_info_list.forEach((info) => {
-                                    node.send({payload: info});
-                                });
-                            }
-                            else {
-                                // Send a single message, containing an array of ALL discovered OnVif-compliant IP devices
-                                node.send({payload: device_info_list});
-                            }
-                        });
-                        break;
-                    case 'STOP':
-                        onvif.stopProbe().then(() => {
-                            node.status({fill:"green",shape:"dot",text: "stopped"});
-                            console.log('Aborted the OnVif discovery process.');
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;
-                    default:
-                        console.log('The msg.payload should contain a START or STOP string');
-                }
-            }
-            else {
-                console.log('The msg.payload should contain a START or STOP string');
+            // Convert the long (space separated) strings to arrays of strings                  
+            probeMatch.types  = probeMatch.types.trim().split(" ");
+            probeMatch.scopes = probeMatch.scopes.trim().split(" ");
+            probeMatch.XAddrs = probeMatch.XAddrs.trim().split(" ");
+            
+            return probeMatch;
+        }
+        
+        // Register once a listener for device events.
+        // The callback function will be called immediately when a device responses.
+        onvif.Discovery.on('device', function(result){
+            node.counter++;
+            
+            if (node.separate) {
+                // Send a separate output message for every discovered OnVif-compliant IP device
+                node.send({payload: simplifyResult(result)}); 
             }
         });
+        
+        node.on("input", function(msg) {  
+            var probeMatch;
+        
+            if (node.discovering) {
+                console.info("Discovery request ignored, since other discovery is active");
+                return;
+            }
+            
+            node.status({fill:"yellow",shape:"dot",text:"discovering"});
+            node.counter = 0;
+            node.discovering = true;
+            
+            var options = { 
+                timeout: node.timeout, // Discovery should end after the specified timeout
+                resolve: false // Return discovered devices as data objects, instead of Cam instances
+            };
+
+            // Start discovery of the ONVIF network devices.
+            // The callback function will be called only once, when the broadcast is finished (after the timeout).
+            onvif.Discovery.probe(options, function(err, result) {
+                if (err) { 
+                    console.log(err);
+                    node.status({fill:"red",shape:"dot",text: "failed"});
+                }
+                else {
+                    node.status({fill:"green",shape:"dot",text: "completed (" + node.counter + "x)"});
+                }           
+                
+                if (!node.separate) {
+                    var devices = [];
+                    
+                    // Convert the array to an easy format
+                    for (var i = 0; i < result.length; i++) {
+                        devices.push(simplifyResult(result[i]));
+                    }
+                    
+                    // Send a single message, containing an array of ALL discovered OnVif-compliant IP devices
+                    node.send({payload: devices});
+                }
+                
+                node.discovering = false;
+            });
+        });
+        
+		node.on('close', function(){
+			node.status({});
+            if (node.timer) {
+                clearTimeout(node.timer);
+            }
+            node.counter = 0;
+            node.discovering = false;
+		});
     }
     RED.nodes.registerType("onvifdiscovery",OnVifDiscoveryNode);
 }
+ 
