@@ -6,14 +6,24 @@ Node Red nodes for communicating with OnVif compliant IP devices
 ## Usage
 
 
-### Broadcast Node
+### Discovery node
 When this node is triggered (by means of an input message), it will send an OnVif broadcast to all the devices on the network.  All OnVif compliant devices will respond to this, and listed in the output message `msg.payload`:
 
-![Broadcast debug](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_broadcast_debug.png)
+![Broadcast flow](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_flow.png)
 
-***TODO explanation of the message content***
+```
+[{"id":"dccb8bf1.9f8a78","type":"onvifdiscovery","z":"bb2edfc9.1718a","name":"","timeout":"5","separate":false,"x":720,"y":820,"wires":[["ff040db0.4745b"]]},{"id":"50c52f5f.7674c","type":"inject","z":"bb2edfc9.1718a","name":"Start","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":550,"y":820,"wires":[["dccb8bf1.9f8a78"]]},{"id":"ff040db0.4745b","type":"debug","z":"bb2edfc9.1718a","name":"OnVif devices","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","x":920,"y":820,"wires":[]}]
+```
+
+For every discovered OnVif compliant device, following data will be generated in the output message:
+
+![Broadcast debug](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_debug.png)
+
+Especially the *'address'* will be important, since it will be used in all other OnVif nodes.
 
 When the checkbox *'Separate output message for each device'* is enabled, a separate output message will be generated for each OnVif compliant device.  When disabled a single output message will be generated, containing an array of all available OnVif devices.
+
+In normal circumstances all responses will arrive within 3 seconds.  Therefore the timeout has a *'default time'* of 5 seconds, which means that the node will wait 5 seconds for all devices to respond.  
 
 ### Device Node
 When this node is triggered (by means of an input message), it will generate an output message `msg.payload` containing information about that device:
