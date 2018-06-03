@@ -17,13 +17,64 @@
         defaults: {
             name: {value:""},
             deviceConfig: {value:"", type: "onvif_device_config"},
-            action: {value:"", required: false}
+            profileToken: {value:"", required:false},
+            profileName: {value:"", required:false},
+            videoEncoderConfigToken: {value:"", required:false},
+            videoEncoderConfigName: {value:"", required:false},
+            videoEncoderConfigEncoding: {value:"", required:false},
+            action: {value:"", required: false},
+            protocol: {value:"HTTP"},
+            stream: {value:"RTP-Unicast"}
         },          
         inputs:1,
         outputs:1,
-        icon: "fluid.png",
+        icon: "media.png",
         label: function() {
             return this.name||"OnVif media";
+        },
+        oneditprepare: function() { 
+            // When the 'action' combobox value changes, only the corresponding field(s) parameter fields should be displayed
+            $("#node-input-action").change(function() {
+                var action = $("#node-input-action").val();
+                
+                // Hide all rows concerning the action parameters, and show some of these again below
+                $(".actionParam-row").hide();
+                
+                // Depending on the selected action, some specific element(s) should be showed
+                switch (action) {
+                    case "getStreamUri":
+                        $("#profileToken-div").show();
+                        $("#protocol-div").show();
+                        $("#stream-div").show();
+                        break;
+                    case "getSnapshotUri":
+                        $("#profileToken-div").show();
+                        break;
+                    case "getOSDs":  
+                        $("#videoEncoderConfigToken-div").show();
+                        break;
+                    case "getVideoEncoderConfigurationOptions":
+                        $("#videoEncoderConfigToken-div").show();
+                        break;
+                    case "getVideoEncoderConfiguration":
+                        $("#videoEncoderConfigToken-div").show();
+                        break;
+                    case "createProfile":
+                        $("#profileToken-div").show();
+                        $("#profileName-div").show();
+                        break;
+                    case "deleteProfile":
+                        $("#profileToken-div").show();
+                        break;
+                    case "setVideoEncoderConfiguration":
+                        $("#videoEncoderConfigToken-div").show();
+                        $("#videoEncoderConfigName-div").show();
+                        $("#videoEncoderConfigEncoding-div").show();
+                        
+                        // TODO display all the required fields
+                        break;
+                }                     
+            });
         }
     });
 </script>
@@ -39,17 +90,67 @@
         <label for="node-input-action"><i class="fa fa-wrench"></i> Action</label>
         <select id="node-input-action">
             <option value=""></option>
-            <option value="getUdpStreamUri">Get UDP stream URL</option>
-            <option value="getHttpStreamUri">Get HTTP stream URL</option>
-            <option value="getRtspStreamUri">Get RTSP stream URL</option>
-            <option value="getVideoEncoderConfigurations">Get video encoder configurations</option>           
+            <option value="getStreamUri">Get stream URL</option>
+            <option value="getVideoEncoderConfiguration">Get video encoder configuration</option> 
+            <option value="getVideoEncoderConfigurations">Get video encoder configurations</option>    
+            <option value="getVideoEncoderConfigurationOptions">Get video encoder configuration options</option>             
             <option value="getProfiles">Get profiles</option>
             <option value="getVideoSources">Get video sources</option>
             <option value="getVideoSourceConfigurations">Get video source configurations</option>
             <option value="getMetadataConfigurations">Get meta data configurations</option>
             <option value="getAudioSources">Get audio sources</option>
             <option value="getAudioSourceConfigurations">Get audio source configurations</option>
-            <option value="getAudioEncoderConfigurations">Get audio encoder configurations</option>    
+            <option value="getAudioEncoderConfigurations">Get audio encoder configurations</option>
+            <option value="getAudioOutputs">Get audio outputs</option>  
+            <option value="getAudioOutputConfigurations">Get audio output configurations</option>  
+            <option value="getSnapshotUri">Get snapshot URI</option>  
+            <option value="getOSDs">Get OSD's</option>    
+            <option value="createProfile">Create profile</option>  
+            <option value="deleteProfile">Delete profile</option>  
+            <!--  TODO <option value="setVideoEncoderConfiguration">Set video encoder configuration</option>    -->          
+        </select>
+    </div>
+    <div class="form-row actionParam-row" id="profileToken-div">
+        <label for="node-input-profileToken"><i class="fa fa-hashtag"></i> Profile token</label>
+        <input type="text" id="node-input-profileToken">
+    </div>
+    <div class="form-row actionParam-row" id="profileName-div">
+        <label for="node-input-profileName"><i class="fa fa-hashtag"></i> Profile name</label>
+        <input type="text" id="node-input-profileName">
+    </div>
+    <div class="form-row actionParam-row" id="videoEncoderConfigToken-div">
+        <label for="node-input-videoEncoderConfigToken"><i class="fa fa-hashtag"></i> Config token</label>
+        <input type="text" id="node-input-videoEncoderConfigToken">
+    </div>
+    <!--  TODO add extra elements for action setVideoEncoderConfiguration   -->
+    <div class="form-row actionParam-row" id="videoEncoderConfigName-div">
+        <label for="node-input-videoEncoderConfigName"><i class="fa fa-comment"></i> Config name</label>
+        <input type="text" id="node-input-videoEncoderConfigName">
+    </div>
+    <div class="form-row actionParam-row" id="videoEncoderConfigEncoding-div">
+        <label for="node-input-videoEncoderConfigEncoding"><i class="fa fa-film"></i> Config encoding</label>
+        <select id="node-input-videoEncoderConfigEncoding">
+            <option value=""></option>
+            <option value="JPEG">JPEG</option>
+            <option value="H264">H264</option> 
+            <option value="MPEG4">MPEG4</option>                
+        </select>
+    </div>
+    <div class="form-row actionParam-row" id="protocol-div">
+        <label for="node-input-protocol"><i class="fa fa-exchange-alt"></i> Protocol</label>
+        <select id="node-input-protocol">
+            <option value=""></option>
+            <option value="HTTP">HTTP</option>
+            <option value="UDP">UDP</option>
+            <option value="RTSP">RTSP</option>            
+        </select>
+    </div>
+    <div class="form-row actionParam-row" id="stream-div">
+        <label for="node-input-stream"><i class="fa fa-code-branch"></i> RTP stream</label>
+        <select id="node-input-stream">
+            <option value=""></option>
+            <option value="RTP-Unicast">Unicast</option>
+            <option value="RTP-Multicast">Multicast</option>           
         </select>
     </div>
     <br>
@@ -63,7 +164,8 @@
     <p>A node to get extra information about an OnVif media service.</p>
     <p><strong>Device:</strong><br/>
     The target OnVif-compliant IP device.</p>
+    <p><strong>Profile:</strong><br/>
+    The token of the required profile on the target IP device.  The URLs are specified in each profile.</p>
     <p><strong>Action:</strong><br/>
     The action that needs to be executed on the target device.  When no action is selected, the action should be specified in the <code>msg.action</code> field of the input message.</p>
 </script>
-
