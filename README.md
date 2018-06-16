@@ -3,11 +3,50 @@ Node Red nodes for communicating with OnVif compliant IP devices
 
 **THIS IS AN EXPERIMENTAL NODE-RED CONTRIBUTION.  API WILL BE CHANGED SOON !!!**
 
+## Install
+Run the following npm command in your Node-RED user directory (typically ~/.node-red):
+```
+npm install node-red-contrib-onvif
+```
+
+## Onvif
+The Open Network Video Interface Forum is an open standard interface to communicate with IP devices on a network.   This standard has become very popular, and therefore lots of manufacturers offer Onvif-compliant IP devices.
+
+All IP devices have their ***own API***, which consists out of a large set of URL's to control the device (to get a snapshot image, to turn the camera left ...).  The disadvantage is that you have to learn all the API's of each camera that you buy, which means that it is not easy to replace a camera by another type (since you always will have to update your Node-Red flow). 
+
+The Onvif standard has been created to solve this issue.  Each Onvif compliant device offers the ***same API*** to control the device, which means that device type X can easily be replaced by device type Y.
+
+Onvif devices can offer multiple (web) services, for all kind of functionalities:
++ Device discovery
++ Device management
++ Media configuration
++ Real time viewing
++ Event handling
++ PTZ camera control
++ ...
+
+Not all Onvif devices offer all those services, since this the device's Onvif ***version*** determines which services are available.  However the Onvif version number is not as important as the Onvif ***profile***.  A number of Onvif profiles are available, which determine which functionality each service offers:
++ Profile S: functionalities of IP video systems, such as video and audio streaming, PTZ controls, ...
++ Profile C: functionalities of IP access control systems, such as door control, event handling, ...
++ Profile G: functionalities of video storage, recording, ...
++ Profile Q: functionalities of device discovery, ...
++ ...
+
+You can find [here](https://www.onvif.org/wp-content/uploads/2018/05/ONVIF_Profile_Feature_overview_v2-1.pdf) which profile is required to fit your needs.  Conclusion is that not all Onvif devices will offer the functionality that you might need!
+
+## Missing functionality
+This Node-Red node is build on top of the [onvif](https://github.com/agsh/onvif) library, which is a profile S and Profile G implementation.  So this Node-Red node is absolutely no full implementation of the entire Onvif standard!  
+
+So what to do if you need extra functionality:
+1. Create a new issue [here](https://github.com/agsh/onvif/issues) to request your new functionality in the onvif library. 
+2. As soon as 1 is implemented, create a new issue [here](https://github.com/bartbutenaers/node-red-contrib-onvif/issues) to request your new functionality in this Node-Red node.
+
+Or if you have programming skills, you might create two pull requests instead.
+
 ## Usage
 
-
 ### Discovery node
-When this node is triggered (by means of an input message), it will send an OnVif broadcast to all the devices on the network.  All OnVif compliant devices will respond to this, and listed in the output message `msg.payload`:
+To search the network for Onvif-compliant devices, the Discovery node can be used.  When this node is triggered (by means of an input message), it will send an OnVif broadcast to all the devices on the network.  All OnVif compliant devices will respond to this, and they will be listed in the output message `msg.payload`:
 
 ![Broadcast flow](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_flow.png)
 
@@ -19,11 +58,13 @@ For every discovered OnVif compliant device, following data will be generated in
 
 ![Broadcast debug](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_debug.png)
 
-Especially the *'address'* will be important, since it will be used in all other OnVif nodes.
-
 When the checkbox *'Separate output message for each device'* is enabled, a separate output message will be generated for each OnVif compliant device.  When disabled a single output message will be generated, containing an array of all available OnVif devices.
 
 In normal circumstances all responses will arrive within 3 seconds.  Therefore the timeout has a *'default time'* of 5 seconds, which means that the node will wait 5 seconds for all devices to respond.  
+
+The ***'address'*** field (in the output message) will be used to configure the Onvif device in Node-Red!  Via the other Onvif nodes (Media, PTZ ...) a config node needs to be specified, which contains all the information required to connect to the Onvif device:
+
+![Onvif config](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_config_node.png)
 
 ### Media node
 
@@ -38,10 +79,16 @@ The action ***getSnapshotUri*** returns the URL that can be used for retrieving 
 ![Media snapshot](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_media_snapshot.png)
 
 ```
-[{"id":"ed82ed59.593e6","type":"http request","z":"bb2edfc9.1718a","name":"","method":"GET","ret":"bin","url":"","tls":"","x":710,"y":3940,"wires":[["50246c7e.8dabd4"]]},{"id":"50246c7e.8dabd4","type":"image","z":"bb2edfc9.1718a","name":"","width":200,"x":890,"y":3940,"wires":[]},{"id":"f8779ce3.3f67","type":"onvifmedia","z":"bb2edfc9.1718a","name":"","deviceConfig":"79ca9bc.80f4d64","profileToken":"","profileName":"","videoEncoderConfigToken":"","action":"getSnapshotUri","protocol":"","stream":"","x":350,"y":3940,"wires":[["a734ba31.f75d78"]]},{"id":"6ac5b6bb.1d3bd8","type":"inject","z":"bb2edfc9.1718a","name":"Get snapshot","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":170,"y":3940,"wires":[["f8779ce3.3f67"]]},{"id":"a734ba31.f75d78","type":"change","z":"bb2edfc9.1718a","name":"","rules":[{"t":"set","p":"url","pt":"msg","to":"payload.uri","tot":"msg"}],"action":"","property":"","from":"","to":"","reg":false,"x":530,"y":3940,"wires":[["ed82ed59.593e6"]]},{"id":"79ca9bc.80f4d64","type":"onvif_device_config","z":"","xaddress":"192.168.1.200","name":"Camera keuken"}]
+[{"id":"ed82ed59.593e6","type":"http request","z":"bb2edfc9.1718a","name":"","method":"GET","ret":"bin","url":"","tls":"","x":1170,"y":2820,"wires":[["50246c7e.8dabd4"]]},{"id":"50246c7e.8dabd4","type":"image","z":"bb2edfc9.1718a","name":"","width":200,"x":1350,"y":2820,"wires":[]},{"id":"f8779ce3.3f67","type":"onvifmedia","z":"bb2edfc9.1718a","name":"","deviceConfig":"","profileToken":"","profileName":"","videoEncoderConfigToken":"","videoEncoderConfigName":"","videoEncoderConfigEncoding":"","action":"getSnapshotUri","protocol":"","stream":"","x":810,"y":2820,"wires":[["a734ba31.f75d78"]]},{"id":"6ac5b6bb.1d3bd8","type":"inject","z":"bb2edfc9.1718a","name":"Get snapshot","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":630,"y":2820,"wires":[["f8779ce3.3f67"]]},{"id":"a734ba31.f75d78","type":"change","z":"bb2edfc9.1718a","name":"","rules":[{"t":"set","p":"url","pt":"msg","to":"payload.uri","tot":"msg"}],"action":"","property":"","from":"","to":"","reg":false,"x":990,"y":2820,"wires":[["ed82ed59.593e6"]]}]
 ```
 
-However this adds some complexity to the flow and the device's credentials (username/password) should be again specified in the httprequest node.  Therefore action ***getSnapshot*** has been added to execute all these steps in a single operation.
+However the flow will become complex and the device's credentials (username/password) should be again specified in the httprequest node.  Therefore action ***getSnapshot*** has been added to execute all these steps in a single operation:
+
+![Media snapshot short](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_media_snapshot_short.png)
+
+```
+[{"id":"5756138c.5e3fac","type":"inject","z":"bb2edfc9.1718a","name":"Get snapshot image","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":890,"y":2560,"wires":[["7346f703.240908"]]},{"id":"7346f703.240908","type":"onvifmedia","z":"bb2edfc9.1718a","name":"","deviceConfig":"","profileToken":"","profileName":"","videoEncoderConfigToken":"","videoEncoderConfigName":"","videoEncoderConfigEncoding":"","action":"getSnapshot","protocol":"","stream":"","x":1090,"y":2560,"wires":[["fb09de66.f5ec2"]]},{"id":"fb09de66.f5ec2","type":"image","z":"bb2edfc9.1718a","name":"","width":200,"x":1270,"y":2560,"wires":[]}]
+```
 
 ### Device Node
 When this node is triggered (by means of an input message), it will generate an output message `msg.payload` containing information about that device:
