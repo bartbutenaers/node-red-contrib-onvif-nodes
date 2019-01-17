@@ -22,13 +22,77 @@
             panSpeed: {value:0.0},
             tiltSpeed: {value:0.0},
             zoomSpeed: {value:0.0},
-            time: {value:1.0}
+            panPosition: {value:0.0},
+            tiltPosition: {value:0.0},
+            zoomPosition: {value:0.0},
+            panTranslation: {value:0.0},
+            tiltTranslation: {value:0.0},
+            zoomTranslation: {value:0.0},
+            time: {value:1.0},
+            preset: {value:""},
+            presetName: {value:""},
+            stopPanTilt: {value:true},
+            stopZoom: {value:true},
+            configurationToken: {value:""}
         },          
         inputs:1,
         outputs:1,
         icon: "fluid.png",
         label: function() {
             return this.name||"OnVif PTZ";
+        },
+        oneditprepare: function() { 
+            // When the 'action' combobox value changes, only the corresponding field(s) parameter fields should be displayed
+            $("#node-input-action").change(function() {
+                var action = $("#node-input-action").val();
+                
+                // Hide all rows concerning the action parameters, and show some of these again below
+                $(".actionParam-row").hide();
+                
+                // Depending on the selected action, some specific element(s) should be showed
+                switch (action) {
+                    case "continuousMove":
+                        $("#panSpeed-div").show();
+                        $("#tiltSpeed-div").show();
+                        $("#zoomSpeed-div").show();
+                        $("#time-div").show();
+                        break;
+                    case "absoluteMove":
+                        $("#panSpeed-div").show();
+                        $("#tiltSpeed-div").show();
+                        $("#zoomSpeed-div").show();
+                        $("#panPosition-div").show();
+                        $("#tiltPosition-div").show();
+                        $("#zoomPosition-div").show();                       
+                        $("#time-div").show();
+                        break;    
+                    case "relativeMove":
+                        $("#panTranslation-div").show();
+                        $("#tiltTranslation-div").show();
+                        $("#zoomTranslation-div").show();
+                        break;  
+                    case "gotoPreset":
+                        $("#preset-div").show();                        
+                        $("#panSpeed-div").show();
+                        $("#tiltSpeed-div").show();
+                        $("#zoomSpeed-div").show();
+                        break; 
+                    case "setPreset":
+                        $("#preset-div").show();   
+                        $("#presetName-div").show();                        
+                        break;                         
+                    case "removePreset":
+                        $("#preset-div").show();                        
+                        break; 
+                    case "stop":
+                        $("#stopPanTilt-div").show(); 
+                        $("#stopZoom-div").show();                        
+                        break; 
+                    case "getConfigurationOptions":
+                        $("#configurationToken-div").show();    
+                        break;
+                }                     
+            });
         }
     });
 </script>
@@ -48,8 +112,9 @@
         <label for="node-input-action"><i class="fa fa-wrench"></i> Action</label>
         <select id="node-input-action">
             <option value=""></option>
-            <option value="move">Move</option>
-            <option value="continuous">Continuous move</option>
+            <option value="continuousMove">Continuous move</option>
+            <option value="absoluteMove">Absolute move</option>
+            <option value="relativeMove">Relative move</option>
             <option value="gotoHomePosition">Goto home position</option>
             <option value="setHomePosition">Set home position</option>
             <option value="getPresets">Get Presets</option>
@@ -59,24 +124,76 @@
             <option value="getConfiguration">Get Configuration</option>
             <option value="getConfigurationOptions">Get Configuration Options</option>
             <option value="getStatus">Get status</option>
+            <option value="getPresets">Get preset positions</option>
+            <option value="setPreset">Set preset position</option>
+            <option value="gotoPreset">Goto preset position</option>
+            <option value="removePreset">Remove preset position</option>
+            <option value="stop">Stop current motion</option>
+            <option value="reconnect">Reconnect to device</option>
         </select>
     </div>
     <br>
-    <div class="form-row">
+    <div class="form-row actionParam-row" id="panSpeed-div">
         <label for="node-input-panSpeed"><i class="fas fa-arrows-alt-h"></i> Pan speed</label>
         <input type="number" id="node-input-panSpeed" step=".1" min="-1.0" max="1.0">
     </div>
-    <div class="form-row">
+    <div class="form-row actionParam-row" id="tiltSpeed-div">
         <label for="node-input-tiltSpeed"><i class="fas fa-arrows-alt-v"></i> Tilt speed</label>
         <input type="number" id="node-input-tiltSpeed" step=".1" min="-1.0" max="1.0">
     </div>
-    <div class="form-row">
+    <div class="form-row actionParam-row" id="zoomSpeed-div">
         <label for="node-input-zoomSpeed"><i class="fa fa-search-plus"></i> Zoom speed</label>
         <input type="number" id="node-input-zoomSpeed">
     </div>
-    <div class="form-row">
+    <div class="form-row actionParam-row" id="panPosition-div">
+        <label for="node-input-panPosition"><i class="fas fa-arrows-alt-h"></i> Pan position</label>
+        <input type="number" id="node-input-panPosition" step=".1" min="-1.0" max="1.0">
+    </div>
+    <div class="form-row actionParam-row" id="tiltPosition-div">
+        <label for="node-input-tiltPosition"><i class="fas fa-arrows-alt-v"></i> Tilt position</label>
+        <input type="number" id="node-input-tiltPosition" step=".1" min="-1.0" max="1.0">
+    </div>
+    <div class="form-row actionParam-row" id="zoomPosition-div">
+        <label for="node-input-zoomPosition"><i class="fa fa-search-plus"></i> Zoom position</label>
+        <input type="number" id="node-input-zoomPosition">
+    </div>
+    <div class="form-row actionParam-row" id="panTranslation-div">
+        <label for="node-input-panTranslation"><i class="fas fa-arrows-alt-h"></i> Pan translation</label>
+        <input type="number" id="node-input-panTranslation" step=".1" min="-1.0" max="1.0">
+    </div>
+    <div class="form-row actionParam-row" id="tiltTranslation-div">
+        <label for="node-input-tiltTranslation"><i class="fas fa-arrows-alt-v"></i> Tilt translation</label>
+        <input type="number" id="node-input-tiltTranslation" step=".1" min="-1.0" max="1.0">
+    </div>
+    <div class="form-row actionParam-row" id="zoomTranslation-div">
+        <label for="node-input-zoomTranslation"><i class="fa fa-search-plus"></i> Zoom translation</label>
+        <input type="number" id="node-input-zoomTranslation">
+    </div>
+    <div class="form-row actionParam-row" id="time-div">
         <label for="node-input-time"><i class="fa fa-clock"></i> Time</label>
         <input type="number" id="node-input-time">
+    </div>
+    <div class="form-row actionParam-row" id="configurationToken-div">
+        <label for="node-input-configurationToken"><i class="fa fa-stack-overflow"></i> Config token</label>
+        <input type="text" id="node-input-configurationToken">
+    </div>
+    <div class="form-row actionParam-row" id="preset-div">
+        <label for="node-input-preset"><i class="fa fa-stack-overflow"></i> Preset</label>
+        <input type="text" id="node-input-preset">
+    </div>
+    <div class="form-row actionParam-row" id="presetName-div">
+        <label for="node-input-presetName"><i class="fa fa-stack-overflow"></i> Preset name</label>
+        <input type="text" id="node-input-presetName">
+    </div>
+    <div class='form-row actionParam-row' id="stopPanTilt-div" >
+        <label>&nbsp;</label>
+        <input type='checkbox' id='node-input-stopPanTilt' style='display: inline-block; width: auto; vertical-align: top;'>
+        <label for='node-input-stopPanTilt' style='width: 70%;'>Stop pan and tilt motions</label>
+    </div>
+    <div class='form-row actionParam-row' id="stopZoom-div" >
+        <label>&nbsp;</label>
+        <input type='checkbox' id='node-input-stopZoom' style='display: inline-block; width: auto; vertical-align: top;'>
+        <label for='node-input-stopZoom' style='width: 70%;'>Stop zooming</label>
     </div>
     <br>
     <div class="form-row">
