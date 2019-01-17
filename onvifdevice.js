@@ -15,51 +15,31 @@
  **/
  module.exports = function(RED) {
     var settings = RED.settings;
-    const onvif = require('node-onvif');
-
+    const onvif = require('onvif');
+    const utils = require('./utils');
+    
     function OnVifDeviceNode(config) {
         RED.nodes.createNode(this, config);
-        this.action  = config.action;
+        this.action           = config.action;
+        this.cam              = null;
         
         var node = this;
         
         // Retrieve the config node, where the device is configured
         this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
 
-        // Create an OnvifDevice object, if a device configuration has been specified
-        if (this.deviceConfig) {
-            if (this.deviceConfig.credentials && this.deviceConfig.credentials.user) {
-                this.device = new onvif.OnvifDevice({
-                    xaddr: this.deviceConfig.xaddress,
-                    user : this.deviceConfig.credentials.user,
-                    pass : this.deviceConfig.credentials.password
-                });
-            }
-            else {
-                this.device = new onvif.OnvifDevice({
-                    xaddr: this.deviceConfig.xaddress
-                });
-            }
-                 
-            // Initialize the OnvifDevice object
-            this.device.init().then(() => {
-                node.status({fill:"green",shape:"dot",text:"connected"});
-            }).catch((error) => {
-                console.error(error);
-                node.status({fill:"red",shape:"ring",text:"not connected"});
-            });
-        }
-        else {
-            node.status({fill:"red",shape:"ring",text:"no device"});
-        }
+        utils.initializeDevice(node, 'TODO');
 
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.device || !node.device.getCurrentProfile()) {
-                // Avoid errors during device.getXXXX, by ensuring that the device has a profile.
-                // This can be a temporary issue at flow startup, since the device initialization above can take some time...
-                console.warn('Ignoring input message because the OnVif device has no current profile');
+            if (!node.cam) {
+                console.warn('Ignoring input message since the device connection is not complete');
+                return;
+            }
+
+            if (!node.cam.capabilities['TODO']) {
+                console.warn('Ignoring input message since the device does not support the media service');
                 return;
             }
             
@@ -73,177 +53,185 @@
             newMsg.xaddr = this.deviceConfig.xaddress;
             newMsg.action = action;
    
-            switch (action) {
-                case "getInformation":
-                    newMsg.payload = node.device.getInformation();
-                    node.send(newMsg);
-                    break;
-                case "getProfileList":
-                    newMsg.payload = node.device.getProfileList();
-                    node.send(newMsg);
-                    break;
-                case "getUdpStreamUrl":
-                    newMsg.payload = node.device.getUdpStreamUrl();
-                    node.send(newMsg);
-                    break;
-                case "getHostname":
-                    node.device.services.device.getHostname().then((result) => {
-                        newMsg.payload = result.data.GetHostnameResponse.HostnameInformation;
+            try {
+                switch (action) {
+                    /*case "getInformation":
+                        newMsg.payload = node.device.getInformation();
                         node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getDNS":
-                    node.device.services.device.getDNS().then((result) => {
-                        newMsg.payload = result.data.GetDNSResponse.DNSInformation.DNSFromDHCP;
+                        break;
+                    case "getProfileList":
+                        newMsg.payload = node.device.getProfileList();
                         node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getNetworkInterfaces":
-                    node.device.services.device.getNetworkInterfaces().then((result) => {
-                        newMsg.payload = result.data.GetNetworkInterfacesResponse.NetworkInterfaces;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getNetworkProtocols":
-                    node.device.services.device.getNetworkProtocols().then((result) => {
-                        newMsg.payload = result.data.GetNetworkProtocolsResponse.NetworkProtocols;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;                    
-                case "getNetworkDefaultGateway":
-                    node.device.services.device.getNetworkDefaultGateway().then((result) => {
-                        newMsg.payload = result.data.GetNetworkDefaultGatewayResponse.NetworkGateway;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;                      
-                case "getSystemDateAndTime":
-                    node.device.services.device.getSystemDateAndTime().then((result) => {
-                        newMsg.payload = result.data.GetSystemDateAndTimeResponse.SystemDateAndTime;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;                     
-                case "getRelayOutputs":
-                    node.device.services.device.getRelayOutputs().then((result) => {
-                        newMsg.payload = result.data.GetRelayOutputsResponse;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;                     
-                case "getNTP":
-                    node.device.services.device.getNTP().then((result) => {
-                        newMsg.payload = result.data.GetNTPResponse.NTPInformation;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;  
-                case "getDynamicDNS":
-                    node.device.services.device.getDynamicDNS().then((result) => {
-                        newMsg.payload = result.data.GetDynamicDNSResponse.DynamicDNSInformation;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;  
-                case "getServices":
-                    var params = {
-                        'IncludeCapability': true
-                    };
+                        break;
+                    case "getHostname":
+                        node.device.services.device.getHostname().then((result) => {
+                            newMsg.payload = result.data.GetHostnameResponse.HostnameInformation;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "getDNS":
+                        node.device.services.device.getDNS().then((result) => {
+                            newMsg.payload = result.data.GetDNSResponse.DNSInformation.DNSFromDHCP;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "getNetworkInterfaces":
+                        node.device.services.device.getNetworkInterfaces().then((result) => {
+                            newMsg.payload = result.data.GetNetworkInterfacesResponse.NetworkInterfaces;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "getNetworkProtocols":
+                        node.device.services.device.getNetworkProtocols().then((result) => {
+                            newMsg.payload = result.data.GetNetworkProtocolsResponse.NetworkProtocols;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;                    
+                    case "getNetworkDefaultGateway":
+                        node.device.services.device.getNetworkDefaultGateway().then((result) => {
+                            newMsg.payload = result.data.GetNetworkDefaultGatewayResponse.NetworkGateway;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;                      
+                    case "getSystemDateAndTime":
+                        node.device.services.device.getSystemDateAndTime().then((result) => {
+                            newMsg.payload = result.data.GetSystemDateAndTimeResponse.SystemDateAndTime;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;                     
+                    case "getRelayOutputs":
+                        node.device.services.device.getRelayOutputs().then((result) => {
+                            newMsg.payload = result.data.GetRelayOutputsResponse;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;                     
+                    case "getNTP":
+                        node.device.services.device.getNTP().then((result) => {
+                            newMsg.payload = result.data.GetNTPResponse.NTPInformation;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;  
+                    case "getDynamicDNS":
+                        node.device.services.device.getDynamicDNS().then((result) => {
+                            newMsg.payload = result.data.GetDynamicDNSResponse.DynamicDNSInformation;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;  
+                    case "getServices":
+                        var params = {
+                            'IncludeCapability': true
+                        };
 
-                    // Following snippet results in "Error: 500 Internal Server Error - Method Not Found"
-                    //promise = node.device.services.device.getServices(params).then((result) => {
-                    //    newMsg.payload = result;
-                    //    node.send(newMsg);
-                    //}).catch((error) => {
-                    //    console.error(error);  
-                    //});
-                    newMsg.payload = node.device.services;
-                    node.send(newMsg);
-                    break;
-                case "getCurrentProfile":
-                    debugger;
-                    newMsg.payload = node.device.getCurrentProfile();
-                    node.send(newMsg);
-                    break;
-                case "getCapabilities":
-                    node.device.services.device.getCapabilities().then((result) => {
-                        newMsg.payload = result.data.GetCapabilitiesResponse.Capabilities;
+                        // Following snippet results in "Error: 500 Internal Server Error - Method Not Found"
+                        //promise = node.device.services.device.getServices(params).then((result) => {
+                        //    newMsg.payload = result;
+                        //    node.send(newMsg);
+                        //}).catch((error) => {
+                        //    console.error(error);  
+                        //});
+                        newMsg.payload = node.device.services;
                         node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;      
-                 case "getWsdlUrl":
-                    node.device.services.device.getWsdlUrl().then((result) => {
-                        newMsg.payload = result.data.GetWsdlUrlResponse.WsdlUrl;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getDiscoveryMode":
-                    node.device.services.device.getDiscoveryMode().then((result) => {
-                        newMsg.payload = result.data.GetDiscoveryModeResponse.DiscoveryMode;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getScopes":
-                    node.device.services.device.getScopes().then((result) => {
-                        newMsg.payload = result.data.GetScopesResponse.Scopes;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "reboot":
-                    node.device.services.device.reboot().then((result) => {
-                        newMsg.payload = result.data.SystemRebootResponse.Message;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getUsers":
-                    node.device.services.device.getUsers().then((result) => {
-                        newMsg.payload = result.data.GetUsersResponse.User;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getZeroConfiguration":
-                    node.device.services.device.getZeroConfiguration().then((result) => {
-                        newMsg.payload = result.data.GetZeroConfigurationResponse.ZeroConfiguration;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;     
-                case "getServiceCapabilities":
-                    // TODO dit geeft een "Method Not Found"
-                    node.device.services.device.getServiceCapabilities().then((result) => {
+                        break;
+                    case "getCurrentProfile":
                         debugger;
-                        //TODO newMsg.payload = result.data.;
+                        newMsg.payload = node.device.getCurrentProfile();
                         node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;                    
+                        break;
+                    case "getCapabilities":
+                        node.device.services.device.getCapabilities().then((result) => {
+                            newMsg.payload = result.data.GetCapabilitiesResponse.Capabilities;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;      
+                     case "getWsdlUrl":
+                        node.device.services.device.getWsdlUrl().then((result) => {
+                            newMsg.payload = result.data.GetWsdlUrlResponse.WsdlUrl;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "getDiscoveryMode":
+                        node.device.services.device.getDiscoveryMode().then((result) => {
+                            newMsg.payload = result.data.GetDiscoveryModeResponse.DiscoveryMode;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "getScopes":
+                        node.device.services.device.getScopes().then((result) => {
+                            newMsg.payload = result.data.GetScopesResponse.Scopes;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "reboot":
+                        node.device.services.device.reboot().then((result) => {
+                            newMsg.payload = result.data.SystemRebootResponse.Message;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "getUsers":
+                        node.device.services.device.getUsers().then((result) => {
+                            newMsg.payload = result.data.GetUsersResponse.User;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;
+                    case "getZeroConfiguration":
+                        node.device.services.device.getZeroConfiguration().then((result) => {
+                            newMsg.payload = result.data.GetZeroConfigurationResponse.ZeroConfiguration;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;     
+                    case "getServiceCapabilities":
+                        // TODO dit geeft een "Method Not Found"
+                        node.device.services.device.getServiceCapabilities().then((result) => {
+                            debugger;
+                            //TODO newMsg.payload = result.data.;
+                            node.send(newMsg);
+                        }).catch((error) => {
+                            console.error(error);
+                        });
+                        break;      */        
+                    case "reconnect":
+                        utils.initializeDevice(node, 'media');
+                        break
+                    default:
+                        //node.status({fill:"red",shape:"dot",text: "unsupported action"});
+                        console.log("Action " + action + " is not supported");                    
+                }
+            }
+            catch (exc) {
+                console.log("Action " + action + " failed:");
+                console.log(exc);
             }
             
             // TODOs
@@ -264,5 +252,29 @@
         });
     }
     RED.nodes.registerType("onvifdevice",OnVifDeviceNode);
+    
+    // Make all the available profiles accessible for the node's config screen
+    RED.httpAdmin.get('/onvifdevice/:cmd/:id', RED.auth.needsPermission('onvifdevice.read'), function(req, res){
+        var node = RED.nodes.getNode(req.params.id);
+
+        if (req.params.cmd === "profiles") {
+            if (!node || !node.cam) {
+                console.log("Cannot determine profile list from node " + req.params.id);
+                return;
+            }
+            
+            var profileNames = [];
+            
+            for(var i = 0; i < node.cam.profiles.length; i++) {
+                profileNames.push(
+                    {
+                        name: node.cam.profiles[i].name,
+                        token: node.cam.profiles[i].$.token
+                    });
+            }
+            
+            // Return a list of all available profiles for the specified Onvif node
+            res.json(profileNames);
+        }
+    });
 }
- 
