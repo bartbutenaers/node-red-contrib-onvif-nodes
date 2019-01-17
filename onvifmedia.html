@@ -33,6 +33,36 @@
             return this.name||"OnVif media";
         },
         oneditprepare: function() { 
+            var node = this;
+        
+            // Load the available profiles from the server
+            $.getJSON('onvifdevice/profiles/' + this.id, function(data) {
+                // The response is a json array, containing all the available profiles
+               //data.sort();
+                
+                // Allow the user to specify the profile via the input message
+                //$("<option value='message'> **MESSAGE BASED**</option>").appendTo("#node-input-profileToken");
+            
+                // Show all available profiles in the dropdown
+                for (i = 0; i < data.length; i++) {
+                    var profile = data[i];
+                    $("<option value='" + profile.token + "'> " + profile.token + " (" + profile.name + ")" + "</option>").appendTo("#node-input-profileToken");
+                }   
+                
+                // TODO Set the device's default profile at the start
+                if (!node.profileToken) {
+                    //node.profileToken = 'length';
+                }
+                
+                // When a categorie is already available, make sure it is selected in the dropdown
+                if (node.profileToken) {
+                    $("#node-input-profileToken").val(node.profileToken);
+                    
+                    // Setting the dropdown value from javascript (using val()), won't trigger the change-event automatically
+                    $('#node-input-profileToken').trigger('change');
+                }
+            });  
+            
             // When the 'action' combobox value changes, only the corresponding field(s) parameter fields should be displayed
             $("#node-input-action").change(function() {
                 var action = $("#node-input-action").val();
@@ -103,16 +133,18 @@
             <option value="getAudioEncoderConfigurations">Get audio encoder configurations</option>
             <option value="getAudioOutputs">Get audio outputs</option>  
             <option value="getAudioOutputConfigurations">Get audio output configurations</option>  
-            <option value="getSnapshotUri">Get snapshot URI</option>  
+            <option value="getSnapshotUri">Get snapshot URI</option> 
+            <option value="getSnapshot">Get snapshot image</option>           
             <option value="getOSDs">Get OSD's</option>    
             <option value="createProfile">Create profile</option>  
             <option value="deleteProfile">Delete profile</option>  
+            <option value="reconnect">Reconnect to device</option>
             <!--  TODO <option value="setVideoEncoderConfiguration">Set video encoder configuration</option>    -->          
         </select>
     </div>
     <div class="form-row actionParam-row" id="profileToken-div">
         <label for="node-input-profileToken"><i class="fa fa-hashtag"></i> Profile token</label>
-        <input type="text" id="node-input-profileToken">
+        <select id="node-input-profileToken"></select>
     </div>
     <div class="form-row actionParam-row" id="profileName-div">
         <label for="node-input-profileName"><i class="fa fa-hashtag"></i> Profile name</label>
@@ -169,3 +201,4 @@
     <p><strong>Action:</strong><br/>
     The action that needs to be executed on the target device.  When no action is selected, the action should be specified in the <code>msg.action</code> field of the input message.</p>
 </script>
+
