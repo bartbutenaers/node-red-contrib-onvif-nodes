@@ -15,93 +15,83 @@
  **/
  module.exports = function(RED) {
     var settings = RED.settings;
-    const onvif = require('node-onvif');
+    const onvif  = require('onvif');
+    const utils  = require('./utils');
 
     function OnVifPtzNode(config) {
         RED.nodes.createNode(this, config);
-        this.panSpeed   = parseFloat(config.panSpeed);
-        this.tiltSpeed  = parseFloat(config.tiltSpeed);
-        this.zoomSpeed  = parseFloat(config.zoomSpeed);
-        this.time       = parseInt(config.time);
-        this.profile    = config.profile;
-        this.action     = config.action;
+        this.panSpeed           = parseFloat(config.panSpeed);
+        this.tiltSpeed          = parseFloat(config.tiltSpeed);
+        this.zoomSpeed          = parseFloat(config.zoomSpeed);
+        this.panPosition        = parseFloat(config.panPosition);
+        this.tiltPosition       = parseFloat(config.tiltPosition);
+        this.zoomPosition       = parseFloat(config.zoomPosition);
+        this.panTranslation     = parseFloat(config.panTranslation);
+        this.tiltTranslation    = parseFloat(config.tiltTranslation);
+        this.zoomTranslation    = parseFloat(config.zoomTranslation);
+        this.time               = parseInt(config.time);
+        this.profile            = config.profile;
+        this.action             = config.action;
+        this.preset             = config.preset;
+        this.presetName         = config.presetName;
+        this.stopPanTilt        = config.stopPanTilt;
+        this.stopZoom           = config.stopZoom
+        this.configurationToken = config.configurationToken;
+        this.cam                = null;
         
         var node = this;
         
         // Retrieve the config node, where the device is configured
         this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
         
-        // Create an OnvifDevice object, if a device configuration has been specified
-        if (this.deviceConfig) {
-            node.status({fill:"yellow",shape:"dot",text:"initializing"});
-            
-            if (this.deviceConfig.credentials && this.deviceConfig.credentials.user) {
-                this.device = new onvif.OnvifDevice({
-                    xaddr: this.deviceConfig.xaddress,
-                    user : this.deviceConfig.credentials.user,
-                    pass : this.deviceConfig.credentials.password
-                });
-            }
-            else {
-                this.device = new onvif.OnvifDevice({
-                    xaddr: this.deviceConfig.xaddress
-                });
-            }
-         
-            // Initialize the OnvifDevice object
-            node.device.init().then(() => {
-                // Check whether an OnvifServicePtz object is available
-                var ptz = node.device.services.ptz;
-                if (ptz) {
-                    // Set the required profile to the device, to let it know which data we want to get
-                    // Remark: the device needs to be initialized first, because the available profile list need to be loaded...
-                    node.device.changeProfile(node.profile); 
-                    node.status({fill:"green",shape:"dot",text:"connected"});
-                }
-                else {
-                    console.error('The ONVIF device does not offer a PTZ service.');
-                    node.status({fill:"red",shape:"dot",text:"no PTZ support"});
-                }
-            }).catch((error) => {
-                console.error(error);
-                node.status({fill:"red",shape:"ring",text:"not connected"});
-            });
-        }
-        else {
-            node.status({fill:"red",shape:"ring",text:"no device"});
-        }
+        utils.initializeDevice(node, 'PTZ');
                 
         node.on("input", function(msg) {
             var newMsg = {};
 
-            var panSpeed  = node.panSpeed;
-            var tiltSpeed = node.tiltSpeed;
-            var zoomSpeed = node.zoomSpeed;
+            var panSpeed           = node.panSpeed;
+            var tiltSpeed          = node.tiltSpeed;
+            var zoomSpeed          = node.zoomSpeed;
+            var panPosition        = node.panPosition;
+            var tiltPosition       = node.tiltPosition;
+            var zoomPosition       = node.zoomPosition;
+            var panTranslation     = node.panTranslation;
+            var tiltTranslation    = node.tiltTranslation;
+            var zoomTranslation    = node.zoomTranslation;
+            var stopPanTilt        = node.stopPanTilt;
+            var stopZoom           = node.stopZoom;
+            var configurationToken = node.configurationToken;
             
             var action = node.action || msg.action;
+            
+            if (!node.cam) {
+                console.warn('Ignoring input message since the device connection is not complete');
+                return;
+            }
+
+            if (!node.cam.capabilities['PTZ']) {
+                console.warn('Ignoring input message since the device does not support the media service');
+                return;
+            }
             
             if (!action) {
                 console.warn('When no action specified in the node, it should be specified in the msg.action');
                 return;
             }
             
-            var currentProfile = node.device.getCurrentProfile();
+            var preset = node.preset || msg.preset; 
+            var presetName = node.presetName || msg.presetName;
+            
+            /*var currentProfile = node.device.getCurrentProfile();
             
             if (!currentProfile) {
                 // Avoid errors during ptzMove, by ensuring that the device has a profile.
                 // This can be a temporary issue at flow startup, since the device initialization above can take some time...
                 console.warn('Ignoring input message because the OnVif device has no current profile');
                 return;
-            }
+            }*/
             
-            // Check whether the current PTZ movement should be interrupted
-            // TODO ipv msg.stop beter gewoon msg.action = stop
-            if (msg.hasOwnProperty('stop') || msg.stop === true) {
-                node.device.ptzStop().catch((error) => {
-                    console.error(error);
-                });
-                return;
-            }
+            // TODO check whether the node.token exists in the ONVIF device
             
             // Check whether a 'pan_speed' value is specified in the input message
             if (msg.hasOwnProperty('pan_speed') || msg.pan_speed < -1.0 || msg.pan_speed > 1.0) {
@@ -133,6 +123,66 @@
                 }
             }
             
+            // Check whether a 'pan_position' value is specified in the input message
+            if (msg.hasOwnProperty('pan_position') /*TODO CHECK VIA PROFILE RANGE  || msg.pan_position < -1.0 || msg.pan_position > 1.0*/) {
+                if (isNaN(msg.pan_position)) {
+                    console.error('The msg.pan_position value should be a number between ?? and ??'); // TODO find boundaries in profile
+                }
+                else {
+                    panPosition = msg.pan_position;
+                }
+            }
+            
+            // Check whether a 'tilt_position' value is specified in the input message
+            if (msg.hasOwnProperty('tilt_position') /*TODO CHECK VIA PROFILE RANGE  || msg.tilt_position < -1.0 || msg.tilt_position > 1.0*/) {
+                if (isNaN(msg.tilt_position)) {
+                    console.error('The msg.tilt_position value should be a number between ?? and ??'); // TODO find boundaries in profile
+                }
+                else {
+                    panPosition = msg.tilt_position;
+                }
+            }
+            
+            // Check whether a 'zoom_position' value is specified in the input message
+            if (msg.hasOwnProperty('zoom_position') /*TODO CHECK VIA PROFILE RANGE  || msg.zoom_position < -1.0 || msg.zoom_position > 1.0*/) {
+                if (isNaN(msg.zoom_position)) {
+                    console.error('The msg.zoom_position value should be a number between ?? and ??'); // TODO find boundaries in profile
+                }
+                else {
+                    panPosition = msg.zoom_position;
+                }
+            }
+            
+            // Check whether a 'pan_translation' value is specified in the input message
+            if (msg.hasOwnProperty('pan_translation') /*TODO CHECK VIA PROFILE RANGE  || msg.pan_translation < -1.0 || msg.pan_translation > 1.0*/) {
+                if (isNaN(msg.pan_translation)) {
+                    console.error('The msg.pan_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
+                }
+                else {
+                    panPosition = msg.pan_translation;
+                }
+            }
+            
+            // Check whether a 'tilt_translation' value is specified in the input message
+            if (msg.hasOwnProperty('tilt_translation') /*TODO CHECK VIA PROFILE RANGE  || msg.tilt_translation < -1.0 || msg.tilt_translation > 1.0*/) {
+                if (isNaN(msg.tilt_translation)) {
+                    console.error('The msg.tilt_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
+                }
+                else {
+                    panPosition = msg.tilt_translation;
+                }
+            }
+            
+            // Check whether a 'zoom_translation' value is specified in the input message
+            if (msg.hasOwnProperty('zoom_translation') /*TODO CHECK VIA PROFILE RANGE  || msg.zoom_translation < -1.0 || msg.zoom_translation > 1.0*/) {
+                if (isNaN(msg.zoom_translation)) {
+                    console.error('The msg.zoom_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
+                }
+                else {
+                    panPosition = msg.zoom_translation;
+                }
+            }
+            
             // Make sure the values are between -1.0 and 1.0
             panSpeed  = Math.min(Math.max(panSpeed, -1.0), 1.0);
             tiltSpeed = Math.min(Math.max(tiltSpeed, -1.0), 1.0);
@@ -141,140 +191,255 @@
             newMsg.xaddr = this.deviceConfig.xaddress;
             newMsg.action = action;            
          
-            switch (action) { 
-                case "move":
-                    var params = {
-                        'speed': {
-                            x: panSpeed,
-                            y: tiltSpeed,
-                            z: zoomSpeed
-                        },
-                        'timeout': node.time
-                    };
-                    
-                    // Move the camera once with the specified speed(s) and during the specified time
-                    node.device.ptzMove(params).catch((error) => {
-                        console.error(error);
-                    });
-                    
-                    break;
-                case "continuous":
-                    var params = {
-                        'ProfileToken': node.profile,
-                        'Velocity': {
-                            x: panSpeed,
-                            y: tiltSpeed,
-                            z: zoomSpeed
-                        },
-                        'Timeout': node.time 
-                    };
+            try {
+                switch (action) { 
+                    case "continuousMove":
+                        var options = {
+                            'profileToken': node.profile,
+                            'x': panSpeed,
+                            'y': tiltSpeed,
+                            'zoom': zoomSpeed,
+                            'timeout': node.time 
+                        };
 
-                    // Move the camera continuously 
-                    node.device.services.ptz.continuousMove(params).catch((error) => {
-                        console.error(error);
-                    });
+                        // Move the camera with the specified speed(s) and during the specified time
+                        node.cam.continuousMove(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;
+                    case "absoluteMove":
+                        // TODO The 'position' value range is specified in the profile
+                        var options = {
+                            'profileToken': node.profile,
+                            'x': panPosition,
+                            'y': tiltPosition,
+                            'zoom': zoomPosition,
+                            'speed': {
+                                'x': panSpeed,
+                                'y': tiltSpeed,
+                                'zoom': zoomSpeed
+                            }
+                        };
+
+                        // Move the camera with the specified speed(s) and during the specified time
+                        node.cam.continuousMove(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;
+                    case "relativeMove":
+                        var options = {
+                            'profileToken': node.profile,
+                            'x': panTranslation,
+                            'y': tiltTranslation,
+                            'zoom': zoomTranslation,
+                            'speed': {
+                                'x': panSpeed,
+                                'y': tiltSpeed,
+                                'zoom': zoomSpeed
+                            }
+                        };
+
+                        // Move the camera with the specified speed(s) and during the specified time
+                        node.cam.continuousMove(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;
+                    case "gotoHomePosition":
+                        var options = {
+                            'profileToken': node.profile,
+                            'speed': {
+                                'x': panSpeed,
+                                'y': tiltSpeed,
+                                'zoom': zoomSpeed
+                            }
+                        };
+                        
+                        // Let the camera go to the home position.
+                        // Make sure a home position is set in advance, otherwise you get a 'No HomePosition' error.
+                        node.cam.gotoHomePosition(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;
+                    case "setHomePosition":
+                        var options = {
+                            'profileToken': node.profile,
+                        };
+                        
+                        // Set the CURRENT camera position as the home position
+                        node.cam.setHomePosition(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;
+                    case "getPresets":
+                        var options = {
+                            'profileToken': node.profile,
+                        };
+                        
+                        node.cam.getPresets(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;
+                    case "setPreset":
+                        var options = {
+                            'profileToken': node.profile
+                        };
+                        
+                        // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
+                        // need to be stored somewhere in the Node-Red flow.  Instead the user can specify a preset NAME, and we will lookup
+                        // to which existing preset token this name corresponds...
+                        node.cam.getPresets(options, function(err, stream, xml) {
+                            // Get the preset token of the specified preset name
+                            var presetToken = stream[presetName];
+                            
+                            // When the preset token exists, we are dealing with an already existing preset.
+                            // Then pass the preset token to the device, so it will UPDATE the existing preset.
+                            // When the preset token is not passed to the device, the device will create a NEW preset (and a new preset token).
+                            if (presetToken) {
+                                options.presetToken = presetToken;
+                            }
+
+                            options.presetName = presetName;
+ 
+                            // Create/update the preset, based on the preset token.  The device will save the current camera parameters
+                            // (XY coordinates, zoom level and a focus adjustment) so that the device can move afterwards to that saved 
+                            // preset position (via the GotoPreset action).
+                            node.cam.setPreset(options, function(err, stream, xml) {
+                                // The response contains the PresetToken which uniquely identifies the Preset.
+                                // The operation will fail when the PTZ device is moving during the SetPreset operation.
+                                utils.handleResult(node, err, stream, xml, newMsg);
+                            });
+                        });
+                        
+                        break;                    
+                    case "removePreset":
+                        var options = {
+                            'profileToken': node.profile
+                        };
+                        
+                        // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
+                        // need to be stored somewhere in the Node-Red flow.  Instead the user can specify a preset NAME, and we will lookup
+                        // to which existing preset token this name corresponds...
+                        node.cam.getPresets(options, function(err, stream, xml) {
+                            // Get the preset token of the specified preset name
+                            var presetToken = stream[presetName];
+                            
+                            // When the preset token exists, we are dealing with an already existing preset.
+                            // Then pass the preset token to the device, so it will UPDATE the existing preset.
+                            // When the preset token is not passed to the device, the device will create a NEW preset (and a new preset token).
+                            if (presetToken) {
+                                options.presetToken = presetToken;
+                            }
+
+                            options.presetName = presetName;
+ 
+                            // Create/update the preset, based on the preset token.  The device will save the current camera parameters
+                            // (XY coordinates, zoom level and a focus adjustment) so that the device can move afterwards to that saved 
+                            // preset position (via the GotoPreset action).
+                            node.cam.removePreset(options, function(err, stream, xml) {
+                                utils.handleResult(node, err, stream, xml, newMsg);
+                            });
+                        });
+
+                        break;                                   
+                    case "gotoPreset":
+                        var options = {
+                            'profileToken': node.profile
+                        };
+                        
+                        // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
+                        // need to be stored somewhere in the Node-Red flow.  Instead the user can specify a preset NAME, and we will lookup
+                        // to which existing preset token this name corresponds...
+                        node.cam.getPresets(options, function(err, stream, xml) {
+                            // Get the preset token of the specified preset name
+                            var preset = stream[presetName];
+                            
+                            // When the preset token doesn't exists, we cannot goto it ...
+                            if (!preset) {
+                                console.warn("Preset token with name " + presetName + " does not exist.");
+                                return;
+                            }
+                            
+                            options.preset = preset; 
+
+                            // TODO enkel doorgeven indien gedefinieerd.
+                            options.speed = {
+                                x: panSpeed,
+                                y: tiltSpeed,
+                                z: zoomSpeed
+                            };
+ 
+                            // Create/update the preset, based on the preset token.  The device will save the current camera parameters
+                            // (XY coordinates, zoom level and a focus adjustment) so that the device can move afterwards to that saved 
+                            // preset position (via the GotoPreset action).
+                            node.cam.gotoPreset(options, function(err, stream, xml) {
+                                utils.handleResult(node, err, stream, xml, newMsg);
+                            });
+                        });
+                        
+                        break;                                             
+                    case "getNodes":
+                        node.cam.getNodes(function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;    
+                    case "getConfigurations":
+                        node.cam.getConfigurations(function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;      
+                    case "getConfigurationOptions":
+                        // TODO error in onvif library due to missing zoom in Panasonic cam (see https://github.com/agsh/onvif/issues/103)
                     
-                    break;
-                case "gotoHomePosition":
-                    var params = {
-                        'ProfileToken': currentProfile['token'],
-                        'Speed'       : 1 // TODO is this correct ???
-                    };
-                    
-                    // Let the camera go to the home position.
-                    // Make sure a home position is set in advance, otherwise you get a 'No HomePosition' error.
-                    node.device.services.ptz.gotoHomePosition(params).catch((error) => {
-                        console.error(error);
-                    });
-                    
-                    break;
-                case "setHomePosition":
-                    var params = {
-                        'ProfileToken': currentProfile['token'],
-                    };
-                    
-                    // Set the CURRENT camera position as the home position
-                    node.device.services.ptz.setHomePosition(params).catch((error) => {
-                        console.error(error);
-                    });
-                    
-                    break;
-                case "getPresets":
-                    var params = {
-                        'ProfileToken': currentProfile['token'],
-                    };
-                    
-                    node.device.services.ptz.getPresets(params).then((result) => {
-                        newMsg.payload = result.data.GetPresetsResponse.Preset;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;
-                case "getNodes":
-                    node.device.services.ptz.getNodes().then((result) => {
-                        newMsg.payload = result.data.GetNodesResponse.PTZNode;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;   
-                case "getNode":
-                    var params = {
-                        'NodeToken': 'PtzNode',
-                    };
-                    
-                    node.device.services.ptz.getNode(params).then((result) => {
-                        newMsg.payload = result.data.GetNodeResponse.PTZNode;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;    
-                case "getConfigurations":
-                    node.device.services.ptz.getConfigurations().then((result) => {
-                        newMsg.payload = result.data.GetConfigurationsResponse.PTZConfiguration;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break; 
-                case "getConfiguration":
-                    var params = {
-                        'ConfigurationToken': 'PtzConf1',
-                    };
-                    
-                    node.device.services.ptz.getConfiguration(params).then((result) => {
-                        newMsg.payload = result.data.GetConfigurationResponse.PTZConfiguration;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;     
-                case "getConfigurationOptions":
-                    var params = {
-                        'ConfigurationToken': 'PtzConf1',
-                    };
-                    
-                    node.device.services.ptz.getConfigurationOptions(params).then((result) => {
-                        newMsg.payload = result.data.GetConfigurationOptionsResponse.PTZConfigurationOptions;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;        
-                case "getStatus":
-                    var params = {
-                        'ProfileToken': currentProfile['token'],
-                    };
-                    
-                    node.device.services.ptz.getStatus(params).then((result) => {
-                        newMsg.payload = result.data.GetStatusResponse.PTZStatus;
-                        node.send(newMsg);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                    break;                       
+                        configurationToken = 'PtzConf1'; // TODO make adjustable (is reeds voorzien op config screen, maar nog niet via input message)
+                        
+                        node.cam.getConfigurationOptions(configurationToken, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;        
+                    case "getStatus":
+                        // TODO error in onvif library due to missing zoom in Panasonic cam (see https://github.com/agsh/onvif/issues/103)
+
+                        var options = {
+                            'profileToken': node.profile,
+                        };
+                        
+                        node.cam.getStatus(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break; 
+                    case "stop":
+                        var options = {
+                            'profileToken': node.profile,
+                            'panTilt': node.stopPanTilt,
+                            'zoom': node.stopZoom
+                        };
+                        
+                        node.cam.stop(options, function(err, stream, xml) {
+                            utils.handleResult(node, err, stream, xml, newMsg);
+                        });
+                        
+                        break;
+                    case "reconnect":
+                        utils.initializeDevice(node, 'media');
+                        break;
+                    default:
+                        //node.status({fill:"red",shape:"dot",text: "unsupported action"});
+                        console.log("Action " + action + " is not supported");
+                }
+            }
+            catch (exc) {
+                console.log("Action " + action + " failed:");
+                console.log(exc);
             }
         });
     }
