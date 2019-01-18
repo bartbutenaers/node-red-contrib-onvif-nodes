@@ -251,7 +251,7 @@
             */
         });
     }
-    RED.nodes.registerType("onvifdevice",OnVifDeviceNode);
+    RED.nodes.registerType("onvif-device",OnVifDeviceNode);
     
     // Make all the available profiles accessible for the node's config screen
     RED.httpAdmin.get('/onvifdevice/:cmd/:id', RED.auth.needsPermission('onvifdevice.read'), function(req, res){
