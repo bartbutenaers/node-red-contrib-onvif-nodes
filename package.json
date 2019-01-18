@@ -20,11 +20,13 @@
     },
     "node-red"     : {
         "nodes": {
-            "onvifsnapshot": "onvifsnapshot.js",
-            "onvifptz": "onvifptz.js",
-            "onvifdiscovery": "onvifdiscovery.js",
-            "onvifdevice": "onvifdevice.js",
-            "onvif_device_config": "onvif_device_config.js",
+            "onvif-config": "onvif_config.js",
+            "onvif-device": "onvif_device.js",
+            "onvif-discovery": "onvif_discovery.js",
+            "onvif-imaging": "onvif_imaging.js",
+            "onvif-media": "onvif_media.js",
+            "onvif-ptz": "onvif_ptz.js",
+            "onvif-recording": "onvif_recording.js"
         }
     }
 }
