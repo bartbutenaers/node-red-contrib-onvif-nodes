@@ -11,7 +11,7 @@
   limitations under the License.
 -->
 <script type="text/javascript">
-    RED.nodes.registerType('onvifdiscovery',{
+    RED.nodes.registerType('onvif-discovery',{
         category: 'OnVif',
         color: '#ff758d',
         defaults: {
@@ -28,7 +28,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="onvifdiscovery">
+<script type="text/x-red" data-template-name="onvif-discovery">
     <div class="form-row">
         <label for="node-input-timeout"><i class="fa fa-clock"></i> Timeout</label>
         <input type="number" id="node-input-timeout" min="0">
@@ -44,7 +44,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="onvifdiscovery">
+<script type="text/x-red" data-help-name="onvif-discovery">
     <p>A node to discover IP devices which support the ONVIF specifications.</p>
     <p>The discovery can be started by sending an input message.  A broadcast takes about 3 seconds in normal circumstances.  The input message will be ignored if another broadcast is already active.</p>
     <p><strong>Timeout:</strong><br/>
