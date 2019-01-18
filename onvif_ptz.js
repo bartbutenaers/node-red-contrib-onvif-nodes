@@ -443,5 +443,5 @@
             }
         });
     }
-    RED.nodes.registerType("onvifptz",OnVifPtzNode);
+    RED.nodes.registerType("onvif-ptz",OnVifPtzNode);
 }
