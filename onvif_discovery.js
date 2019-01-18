@@ -28,6 +28,8 @@
         
         // Simplify the result, so it becomes more easy to parse it with Node-Red
         function simplifyResult(result) {
+            var probeMatch;
+		
             // Reduce the property depth
             probeMatch = result.probeMatches.probeMatch;
                         
@@ -50,9 +52,7 @@
             }
         });
         
-        node.on("input", function(msg) {  
-            var probeMatch;
-        
+        node.on("input", function(msg) {         
             if (node.discovering) {
                 console.info("Discovery request ignored, since other discovery is active");
                 return;
