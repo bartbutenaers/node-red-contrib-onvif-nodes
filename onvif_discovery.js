@@ -103,6 +103,6 @@
             node.discovering = false;
 		});
     }
-    RED.nodes.registerType("onvifdiscovery",OnVifDiscoveryNode);
+    RED.nodes.registerType("onvif-discovery",OnVifDiscoveryNode);
 }
  
