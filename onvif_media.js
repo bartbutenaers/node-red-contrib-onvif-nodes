@@ -295,5 +295,5 @@
             }
         });
     }
-    RED.nodes.registerType("onvifmedia",OnVifMediaNode);
+    RED.nodes.registerType("onvif-media",OnVifMediaNode);
 }
