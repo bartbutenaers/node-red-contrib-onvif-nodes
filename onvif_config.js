@@ -17,13 +17,13 @@
     var settings = RED.settings;
     const onvif = require('node-onvif');
 
-    function OnVifDeviceConfigNode(config) {
+    function OnVifConfigNode(config) {
         RED.nodes.createNode(this, config);
         this.xaddress = config.xaddress;
         this.name     = config.name; 
         // Remark: user name and password are stored in this.credentials
     }
-    RED.nodes.registerType("onvif_device_config",OnVifDeviceConfigNode,{
+    RED.nodes.registerType("onvif-config",OnVifConfigNode,{
         credentials: {
             user: {type:"text"},
             password: {type: "password"}
