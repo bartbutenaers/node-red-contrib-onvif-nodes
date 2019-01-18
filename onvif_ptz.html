@@ -11,7 +11,7 @@
   limitations under the License.
 -->
 <script type="text/javascript">
-    RED.nodes.registerType('onvifptz',{
+    RED.nodes.registerType('onvif-ptz',{
         category: 'OnVif',
         color: '#ff758d',
         defaults: {
@@ -97,7 +97,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="onvifptz">
+<script type="text/x-red" data-template-name="onvif-ptz">
     <div class="form-row">
         <label for="node-input-deviceConfig"><i class="fa fa-cog"></i> Device</label>
         <!-- Node-Red will replace this input element by a drop-down (with available OnVif device configurations) -->
@@ -202,7 +202,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="onvifptz">
+<script type="text/x-red" data-help-name="onvif-ptz">
     <p>A node to get a snapshot image from an OnVif compatible IP camera.</p>
     <p><strong>Device:</strong><br/>
     The target OnVif-compliant IP device.</p>
