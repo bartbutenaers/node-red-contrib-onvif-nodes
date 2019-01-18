@@ -11,7 +11,7 @@
   limitations under the License.
 -->
 <script type="text/javascript">
-    RED.nodes.registerType('onvifmedia',{
+    RED.nodes.registerType('onvif-media',{
         category: 'OnVif',
         color: '#ff758d',
         defaults: {
@@ -109,7 +109,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="onvifmedia">
+<script type="text/x-red" data-template-name="onvif-media">
     <div class="form-row">
         <label for="node-input-deviceConfig"><i class="fa fa-cog"></i> Device</label>
         <!-- Node-Red will replace this input element by a drop-down (with available OnVif device configurations) -->
@@ -192,7 +192,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="onvifmedia">
+<script type="text/x-red" data-help-name="onvif-media">
     <p>A node to get extra information about an OnVif media service.</p>
     <p><strong>Device:</strong><br/>
     The target OnVif-compliant IP device.</p>
