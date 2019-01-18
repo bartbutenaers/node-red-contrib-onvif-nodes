@@ -15,7 +15,6 @@
  **/
  module.exports = function(RED) {
     var settings = RED.settings;
-    const onvif = require('node-onvif');
 
     function OnVifConfigNode(config) {
         RED.nodes.createNode(this, config);
