@@ -11,7 +11,7 @@
   limitations under the License.
 -->
 <script type="text/javascript">
-    RED.nodes.registerType('onvif_device_config',{
+    RED.nodes.registerType('onvif-config',{
         category: 'config',
         color: '#ff758d',
         defaults: {
@@ -32,7 +32,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="onvif_device_config">
+<script type="text/x-red" data-template-name="onvif-config">
     <div class="form-row">
         <label for="node-config-input-xaddress"><i class="fa fa-globe"></i> xAddress</label>
         <input type="text" id="node-config-input-xaddress">
@@ -52,7 +52,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="onvif_device_config">
+<script type="text/x-red" data-help-name="onvif-config">
     <p><strong>xAddress:</strong><br/>
     The URL of the required endpoint on the target IP device.</p>
     <p><strong>User name:</strong><br/>
