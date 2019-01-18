@@ -1,4 +1,4 @@
-# node-red-contrib-onvif
+# node-red-contrib-onvif-nodes
 Node Red nodes for communicating with OnVif compliant IP devices
 
 **THIS IS AN EXPERIMENTAL NODE-RED CONTRIBUTION.  API WILL BE CHANGED SOON !!!**
@@ -6,7 +6,7 @@ Node Red nodes for communicating with OnVif compliant IP devices
 ## Install
 Run the following npm command in your Node-RED user directory (typically ~/.node-red):
 ```
-npm install node-red-contrib-onvif
+npm install node-red-contrib-onvif-nodes
 ```
 
 ## Onvif
