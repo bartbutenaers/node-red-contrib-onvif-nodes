@@ -58,6 +58,13 @@ To search the network for Onvif-compliant devices, the Discovery node can be use
 [{"id":"dccb8bf1.9f8a78","type":"onvifdiscovery","z":"bb2edfc9.1718a","name":"","timeout":"5","separate":false,"x":720,"y":820,"wires":[["ff040db0.4745b"]]},{"id":"50c52f5f.7674c","type":"inject","z":"bb2edfc9.1718a","name":"Start","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":550,"y":820,"wires":[["dccb8bf1.9f8a78"]]},{"id":"ff040db0.4745b","type":"debug","z":"bb2edfc9.1718a","name":"OnVif devices","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","x":920,"y":820,"wires":[]}]
 ```
 
+The Discovery node has following settings:
++ The ***timeout*** time is by default 5 seconds, which means that the node will wait 5 seconds for all devices to respond. In normal circumstances all responses will arrive within 3 seconds.  However when some devices are not detected, it might be useful to increase the timeout time.  That way slower devices will have more time to respond to the broadcast signal.
+
++ The checkbox ***'Separate output message for each device'*** allow to control the output messages:
+   + When enabled, a separate output message will be generated for each OnVif compliant device.  
+   + When disabled, a single output message will be generated (containing an array of all available OnVif devices).
+   
 For every discovered OnVif compliant device, following data will be generated in the output message:
 
 ![Broadcast debug](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_debug.png)
@@ -65,13 +72,6 @@ For every discovered OnVif compliant device, following data will be generated in
 The ***'address'*** field contains the most important information (in the output message), since it will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  In all other Onvif nodes (Media, PTZ ...), these device config nodes can be selected (in the dropdown) to send Onvif commands to the device:
 
 ![Onvif config](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_config_node.png)
-
-The Discovery node has following settings:
-+ The ***timeout*** time is by default 5 seconds, which means that the node will wait 5 seconds for all devices to respond. In normal circumstances all responses will arrive within 3 seconds.  However when some devices are not detected, it might be useful to increase the timeout time.  That way slower devices will have more time to respond to the broadcast signal.
-
-+ The checkbox ***'Separate output message for each device'*** allow to control the output messages:
-   + When enabled, a separate output message will be generated for each OnVif compliant device.  
-   + When disabled, a single output message will be generated (containing an array of all available OnVif devices).
 
 ### Media node
 
