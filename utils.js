@@ -42,7 +42,6 @@ exports.initializeDevice = function(node, serviceName) {
             node.cam = this;
             
             if (err) {
-                console.error(err);
                 node.status({fill:"red",shape:"ring",text:"disconnected"});
             }
             else {  
@@ -66,17 +65,15 @@ exports.initializeDevice = function(node, serviceName) {
 exports.handleResult = function(node, err, stream, xml, newMsg) {
     if (err) {
         var lowercase = err.message.toLowerCase();
-    
-        console.log(err);
         
         // Sometimes the OnVif device responds with errors like "Method Not Found", "Action Not Implemented", ... 
         // In that case we will show an error indicating that the action is not supported by the device.
-        //if (lowercase.includes("not found") || lowercase.includes("not implemented")) {
-        //    node.status({fill:"red",shape:"dot",text: "unsupported action"});
-        //}
-        //else {
-        //    node.status({fill:"red",shape:"dot",text: "failed"});
-        //}
+        if (lowercase.includes("not found") || lowercase.includes("not implemented")) {
+            node.status({fill:"red",shape:"dot",text: "unsupported action"});
+        }
+        else {
+            node.status({fill:"red",shape:"dot",text: "failed"});
+        }
     }
     else {
         newMsg.payload = stream;
