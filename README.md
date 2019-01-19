@@ -11,7 +11,7 @@ Run the following npm command in your Node-RED user directory (typically ~/.node
 npm install node-red-contrib-onvif-nodes
 ```
 
-## Onvif
+## Onvif basics
 The Open Network Video Interface Forum is an open standard interface to communicate with IP devices on a network.   This standard has become very popular, and therefore lots of manufacturers offer Onvif-compliant IP devices.
 
 All IP devices have their ***own API***, which consists out of a large set of URL's to control the device (to get a snapshot image, to turn the camera left ...).  The disadvantage is that you have to learn all the API's of each camera that you buy, which means that it is not easy to replace a camera by another type (since you always will have to update your Node-Red flow). 
@@ -36,12 +36,14 @@ Not all Onvif devices offer all those services, since this the device's Onvif **
 
 You can find [here](https://www.onvif.org/wp-content/uploads/2018/05/ONVIF_Profile_Feature_overview_v2-1.pdf) which profile is required to fit your needs.  Conclusion is that not all Onvif devices will offer the functionality that you might need!
 
-## Missing functionality
-This Node-Red node is build on top of the [onvif](https://github.com/agsh/onvif) library, which is a profile S and Profile G implementation.  So this Node-Red node is absolutely no full implementation of the entire Onvif standard!  
+## Missing functionality and problems
+This Node-Red node is build on top of the [onvif](https://github.com/agsh/onvif) library, which is a profile S and Profile G implementation.  So this Node-Red node is absolutely no full implementation of the entire Onvif standard!
 
-So what to do if you need extra functionality:
-1. Create a new issue [here](https://github.com/agsh/onvif/issues) to request your new functionality in the onvif library. 
-2. As soon as 1 is implemented, create a new issue [here](https://github.com/bartbutenaers/node-red-contrib-onvif/issues) to request your new functionality in this Node-Red node.
+Moreover not all device manufacturers implement the Onvif standard correctly.  In that case you might not be able to fully control your devices using these nodes.
+
+Most of the Onvif logic is developed in the library I use underneath.  So to get new functionality or to get a problem fixed, the fastest way to get it done is following these steps:
+1. Create a new issue [here](https://github.com/agsh/onvif/issues) to ask your Onvif related question in the onvif library.  This step is **not** required when you have a Node-RED specific question!
+2. As soon as step 1 is implemented, create a new issue [here](https://github.com/bartbutenaers/node-red-contrib-onvif/issues) and then I can finish your change in this Node-Red node.
 
 Or if you have programming skills, you might create two pull requests instead.
 
@@ -60,13 +62,16 @@ For every discovered OnVif compliant device, following data will be generated in
 
 ![Broadcast debug](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_debug.png)
 
-When the checkbox *'Separate output message for each device'* is enabled, a separate output message will be generated for each OnVif compliant device.  When disabled a single output message will be generated, containing an array of all available OnVif devices.
-
-In normal circumstances all responses will arrive within 3 seconds.  Therefore the timeout has a *'default time'* of 5 seconds, which means that the node will wait 5 seconds for all devices to respond.  
-
-The ***'address'*** field (in the output message) will be used to configure the Onvif device in Node-Red!  Via the other Onvif nodes (Media, PTZ ...) a config node needs to be specified, which contains all the information required to connect to the Onvif device:
+The ***'address'*** field contains the most important information (in the output message), since it will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  In all other Onvif nodes (Media, PTZ ...), these device config nodes can be selected (in the dropdown) to send Onvif commands to the device:
 
 ![Onvif config](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_config_node.png)
+
+The Discovery node has following settings:
++ The ***timeout*** time is by default 5 seconds, which means that the node will wait 5 seconds for all devices to respond. In normal circumstances all responses will arrive within 3 seconds.  However when some devices are not detected, it might be useful to increase the timeout time.  That way slower devices will have more time to respond to the broadcast signal.
+
++ The checkbox ***'Separate output message for each device'*** allow to control the output messages:
+   + When enabled, a separate output message will be generated for each OnVif compliant device.  
+   + When disabled, a single output message will be generated (containing an array of all available OnVif devices).
 
 ### Media node
 
