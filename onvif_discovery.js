@@ -33,10 +33,20 @@
             // Reduce the property depth
             probeMatch = result.probeMatches.probeMatch;
                         
-            // Convert the long (space separated) strings to arrays of strings                  
-            probeMatch.types  = probeMatch.types.trim().split(" ");
-            probeMatch.scopes = probeMatch.scopes.trim().split(" ");
-            probeMatch.XAddrs = probeMatch.XAddrs.trim().split(" ");
+            // The result can be an array of strings, or a long (space separated) string.
+            // In case of a long string, split it to an array of strings...
+            
+            if (typeof probeMatch.types === 'string' || probeMatch.types instanceof String) {
+                probeMatch.types  = probeMatch.types.trim().split(" ");
+            }
+            
+            if (typeof probeMatch.scopes === 'string' || probeMatch.scopes instanceof String) {
+                probeMatch.scopes = probeMatch.scopes.trim().split(" ");
+            }
+            
+            if (typeof probeMatch.XAddrs === 'string' || probeMatch.XAddrs instanceof String) {
+                probeMatch.XAddrs = probeMatch.XAddrs.trim().split(" ");
+            }
             
             return probeMatch;
         }
