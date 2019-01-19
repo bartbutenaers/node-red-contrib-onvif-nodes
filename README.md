@@ -73,6 +73,12 @@ The ***'address'*** field contains the most important information (in the output
 
 ![Onvif config](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_config_node.png)
 
+During discovery the node status will be *'discovering'*.  But once the timeout has passed, the discovery process is *'completed'* and the number of discovered devices will be displayed:
+
+![Broadcast status](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_status.png)
+
+As long as the discovery process is active, no second discovery process can be started (via the same Discovery node).
+
 ### Media node
 
 ![Media flow](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_media_flow.png)
