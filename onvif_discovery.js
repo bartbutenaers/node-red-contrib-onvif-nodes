@@ -21,7 +21,6 @@
         RED.nodes.createNode(this, config);
         this.separate = config.separate;
         this.discovering = false;
-        this.timer = null;
         this.counter = 0;
 
         var node = this;
@@ -51,16 +50,18 @@
             return probeMatch;
         }
         
-        // Register once a listener for device events.
-        // The callback function will be called immediately when a device responses.
-        onvif.Discovery.on('device', function(result){
+        function handleResult(result) {
             node.counter++;
             
             if (node.separate) {
                 // Send a separate output message for every discovered OnVif-compliant IP device
                 node.send({payload: simplifyResult(result)}); 
             }
-        });
+        }
+        
+        // Register once a listener for device events.
+        // The callback function will be called immediately when a device responses.
+        onvif.Discovery.on('device', handleResult);
         
         node.on("input", function(msg) {         
             if (node.discovering) {
@@ -106,9 +107,9 @@
         
 		node.on('close', function(){
 			node.status({});
-            if (node.timer) {
-                clearTimeout(node.timer);
-            }
+            
+            onvif.Discovery.removeListener('device', handleResult);
+            
             node.counter = 0;
             node.discovering = false;
 		});
