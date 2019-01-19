@@ -3,6 +3,8 @@ Node Red nodes for communicating with OnVif compliant IP devices
 
 **THIS IS AN EXPERIMENTAL NODE-RED CONTRIBUTION.  API WILL BE CHANGED SOON !!!**
 
+**SEE THIS [DISCUSSION](https://discourse.nodered.org/t/onvif-camera-control/6888) ON THE NODE-RED FORUM FOR LATEST INFORMATION**
+
 ## Install
 Run the following npm command in your Node-RED user directory (typically ~/.node-red):
 ```
