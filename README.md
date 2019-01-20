@@ -69,9 +69,11 @@ For every discovered OnVif compliant device, following data will be generated in
 
 ![Broadcast debug](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_discovery_debug.png)
 
-The ***'address'*** field contains the most important information (in the output message), since it will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  In all other Onvif nodes (Media, PTZ ...), these device config nodes can be selected (in the dropdown) to send Onvif commands to the device:
+The ***'XAddrs'*** field contains the IP address, which will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  In all other Onvif nodes (Media, PTZ ...), these device config nodes can be selected (in the dropdown) to send Onvif commands to the device:
 
 ![Onvif config](https://raw.githubusercontent.com/bartbutenaers/node-red-contrib-onvif/master/images/onvif_config_node.png)
+
+CAUTION: the IP addres of the Onvif device should not be changed by your DHCP server (e.g. inside your router), otherwise the Onvif device won't be accessible anymore afterwards.
 
 During discovery the node status will be *'discovering'*.  But once the timeout has passed, the discovery process is *'completed'* and the number of discovered devices will be displayed:
 
