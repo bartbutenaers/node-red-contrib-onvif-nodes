@@ -11,6 +11,38 @@
   limitations under the License.
 -->
 <script type="text/javascript">
+    function loadProfiles(node) {
+        // Load the available profiles from the server
+        $.getJSON('onvifdevice/profiles/' + node.id, function(data) {
+            $("#node-input-profileToken").empty();
+                    
+            // The response is a json array, containing all the available profiles
+            //data.sort();
+            
+            // Allow the user to specify the profile via the input message
+            //$("<option value='message'> **MESSAGE BASED**</option>").appendTo("#node-input-profileToken");
+        
+            // Show all available profiles in the dropdown
+            for (i = 0; i < data.length; i++) {
+                var profile = data[i];
+                $("<option value='" + profile.token + "'> " + profile.name + " (" + profile.token + ")" + "</option>").appendTo("#node-input-profileToken");
+            }   
+            
+            // TODO Set the device's default profile at the start
+            if (!node.profileToken) {
+                //node.profileToken = 'length';
+            }
+            
+            // When a categorie is already available, make sure it is selected in the dropdown
+            if (node.profileToken) {
+                $("#node-input-profileToken").val(node.profileToken);
+                
+                // Setting the dropdown value from javascript (using val()), won't trigger the change-event automatically
+                $('#node-input-profileToken').trigger('change');
+            }
+        });
+    }
+
     RED.nodes.registerType('onvif-media',{
         category: 'OnVif',
         color: '#ff758d',
@@ -35,33 +67,14 @@
         oneditprepare: function() { 
             var node = this;
         
-            // Load the available profiles from the server
-            $.getJSON('onvifdevice/profiles/' + this.id, function(data) {
-                // The response is a json array, containing all the available profiles
-               //data.sort();
-                
-                // Allow the user to specify the profile via the input message
-                //$("<option value='message'> **MESSAGE BASED**</option>").appendTo("#node-input-profileToken");
+            loadProfiles(node);
             
-                // Show all available profiles in the dropdown
-                for (i = 0; i < data.length; i++) {
-                    var profile = data[i];
-                    $("<option value='" + profile.token + "'> " + profile.token + " (" + profile.name + ")" + "</option>").appendTo("#node-input-profileToken");
-                }   
-                
-                // TODO Set the device's default profile at the start
-                if (!node.profileToken) {
-                    //node.profileToken = 'length';
-                }
-                
-                // When a categorie is already available, make sure it is selected in the dropdown
-                if (node.profileToken) {
-                    $("#node-input-profileToken").val(node.profileToken);
-                    
-                    // Setting the dropdown value from javascript (using val()), won't trigger the change-event automatically
-                    $('#node-input-profileToken').trigger('change');
-                }
-            });  
+            // When another config node is selected, the corresponding profiles should be loaded
+            $("#node-input-deviceConfig").change(function() {
+            debugger;
+            // TODO don't do this at startup because the current profile value should be cleared here ...
+                loadProfiles(node);
+            });
             
             // When the 'action' combobox value changes, only the corresponding field(s) parameter fields should be displayed
             $("#node-input-action").change(function() {
