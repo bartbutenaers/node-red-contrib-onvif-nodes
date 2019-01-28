@@ -23,82 +23,46 @@
         var node = this; 
         
         // Retrieve the config node, where the device is configured
-        this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
-
-        // Create an OnvifDevice object, if a device configuration has been specified
-        if (this.deviceConfig) {
-            node.status({fill:"yellow",shape:"dot",text:"initializing"});
-            
-            if (this.deviceConfig.credentials && this.deviceConfig.credentials.user) {
-                var options = {
-                    hostname: this.deviceConfig.xaddress,
-                    username: this.deviceConfig.credentials.user,
-                    password: this.deviceConfig.credentials.password
-                };
-            }
-            else {
-                var options = {
-                    hostname: this.deviceConfig.xaddress
-                };
-            }
-            
-            // Create a new camera instance.
-            // It tries to connect automatically to the device, and load a lot of data.
-            new onvif.Cam(options, function(err) { 
-                if (err) {
-                    console.error(err);
-                    node.status({fill:"red",shape:"ring",text:"not connected"});
-                }
-                else {
-                    node.status({fill:"green",shape:"dot",text:"connected"});
-                    // As soon as the device has been setup, we will keep a reference to it
-                    node.cam = this;
-                }
-            });
-        }
-        else {
-            node.status({fill:"red",shape:"ring",text:"no device"});
-        }
+        node.deviceConfig = RED.nodes.getNode(config.deviceConfig);
         
-        function handleResult(err, stream, xml, newMsg) {
-            if (err) {
-                var lowercase = err.message.toLowerCase();
+        if (node.deviceConfig) {
+            node.listener = function(onvifStatus) {
+                utils.setNodeStatus(node, 'recording', onvifStatus);
+            }
             
-                console.log(err);
-                
-                // Sometimes the OnVif device responds with errors like "Method Not Found", "Action Not Implemented", ... 
-                // In that case we will show an error indicating that the action is not supported by the device.
-                //if (lowercase.includes("not found") || lowercase.includes("not implemented")) {
-                //    node.status({fill:"red",shape:"dot",text: "unsupported action"});
-                //}
-                //else {
-                //    node.status({fill:"red",shape:"dot",text: "failed"});
-                //}
-            }
-            else {
-                newMsg.payload = stream;
-                node.send(newMsg);
-            }
+            // Start listening for Onvif config nodes status changes
+            node.deviceConfig.addListener("onvif_status", node.listener);
+            
+            // Show the current Onvif config node status already
+            utils.setNodeStatus(node, 'recording', node.deviceConfig.onvifStatus);
         }
 
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.cam) {
-                console.warn('Ignoring input message since the device connection is not complete');
+            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                //console.warn('Ignoring input message since the device connection is not complete');
                 return;
             }
-// TODO testen of er een recording service is, net zoals bij de PTZ     
-       
-            //node.status({});
+
+            if (!node.deviceConfig.cam.capabilities['recording']) {
+                //console.warn('Ignoring input message since the device does not support the recording service');
+                return;
+            }
 
             newMsg.xaddr = this.deviceConfig.xaddress;
             
             // TODO deze function call geeft steeds "Error: Wrong ONVIF SOAP response"
             // Kan het zijn dat panasonic geen recording service heeft ???
-            node.cam.getRecordings(function(err, stream, xml) {
-                handleResult(err, stream, xml, newMsg);
+            node.deviceConfig.cam.getRecordings(function(err, stream, xml) {
+                utils.handleResult(node, err, stream, xml, newMsg);
             });
+        });
+        
+        node.on("close",function() { 
+            if (node.listener) {
+                node.deviceConfig.removeListener("onvif_status", node.listener);
+            }
         });
     }
     RED.nodes.registerType("onvif-recording",OnVifRecordingNode);
