@@ -37,15 +37,24 @@
         this.stopPanTilt        = config.stopPanTilt;
         this.stopZoom           = config.stopZoom
         this.configurationToken = config.configurationToken;
-        this.cam                = null;
         
         var node = this;
         
         // Retrieve the config node, where the device is configured
-        this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
+        node.deviceConfig = RED.nodes.getNode(config.deviceConfig);
         
-        utils.initializeDevice(node, 'PTZ');
-                
+        if (node.deviceConfig) {
+            node.listener = function(onvifStatus) {
+                utils.setNodeStatus(node, 'PTZ', onvifStatus);
+            }
+            
+            // Start listening for Onvif config nodes status changes
+            node.deviceConfig.addListener("onvif_status", node.listener);
+            
+            // Show the current Onvif config node status already
+            utils.setNodeStatus(node, 'PTZ', node.deviceConfig.onvifStatus);
+        }
+
         node.on("input", function(msg) {
             var newMsg = {};
 
@@ -64,13 +73,13 @@
             
             var action = node.action || msg.action;
             
-            if (!node.cam) {
-                console.warn('Ignoring input message since the device connection is not complete');
+            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                //console.warn('Ignoring input message since the device connection is not complete');
                 return;
             }
 
-            if (!node.cam.capabilities['PTZ']) {
-                console.warn('Ignoring input message since the device does not support the media service');
+            if (!node.deviceConfig.cam.capabilities['PTZ']) {
+                //console.warn('Ignoring input message since the device does not support the media service');
                 return;
             }
             
@@ -203,7 +212,7 @@
                         };
 
                         // Move the camera with the specified speed(s) and during the specified time
-                        node.cam.continuousMove(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.continuousMove(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -223,7 +232,7 @@
                         };
 
                         // Move the camera with the specified speed(s) and during the specified time
-                        node.cam.continuousMove(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.continuousMove(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -242,7 +251,7 @@
                         };
 
                         // Move the camera with the specified speed(s) and during the specified time
-                        node.cam.continuousMove(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.continuousMove(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -259,7 +268,7 @@
                         
                         // Let the camera go to the home position.
                         // Make sure a home position is set in advance, otherwise you get a 'No HomePosition' error.
-                        node.cam.gotoHomePosition(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.gotoHomePosition(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -270,7 +279,7 @@
                         };
                         
                         // Set the CURRENT camera position as the home position
-                        node.cam.setHomePosition(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.setHomePosition(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -280,7 +289,7 @@
                             'profileToken': node.profile,
                         };
                         
-                        node.cam.getPresets(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.getPresets(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -293,7 +302,7 @@
                         // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
                         // need to be stored somewhere in the Node-Red flow.  Instead the user can specify a preset NAME, and we will lookup
                         // to which existing preset token this name corresponds...
-                        node.cam.getPresets(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.getPresets(options, function(err, stream, xml) {
                             // Get the preset token of the specified preset name
                             var presetToken = stream[presetName];
                             
@@ -309,7 +318,7 @@
                             // Create/update the preset, based on the preset token.  The device will save the current camera parameters
                             // (XY coordinates, zoom level and a focus adjustment) so that the device can move afterwards to that saved 
                             // preset position (via the GotoPreset action).
-                            node.cam.setPreset(options, function(err, stream, xml) {
+                            node.deviceConfig.cam.setPreset(options, function(err, stream, xml) {
                                 // The response contains the PresetToken which uniquely identifies the Preset.
                                 // The operation will fail when the PTZ device is moving during the SetPreset operation.
                                 utils.handleResult(node, err, stream, xml, newMsg);
@@ -325,7 +334,7 @@
                         // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
                         // need to be stored somewhere in the Node-Red flow.  Instead the user can specify a preset NAME, and we will lookup
                         // to which existing preset token this name corresponds...
-                        node.cam.getPresets(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.getPresets(options, function(err, stream, xml) {
                             // Get the preset token of the specified preset name
                             var presetToken = stream[presetName];
                             
@@ -341,7 +350,7 @@
                             // Create/update the preset, based on the preset token.  The device will save the current camera parameters
                             // (XY coordinates, zoom level and a focus adjustment) so that the device can move afterwards to that saved 
                             // preset position (via the GotoPreset action).
-                            node.cam.removePreset(options, function(err, stream, xml) {
+                            node.deviceConfig.cam.removePreset(options, function(err, stream, xml) {
                                 utils.handleResult(node, err, stream, xml, newMsg);
                             });
                         });
@@ -355,7 +364,7 @@
                         // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
                         // need to be stored somewhere in the Node-Red flow.  Instead the user can specify a preset NAME, and we will lookup
                         // to which existing preset token this name corresponds...
-                        node.cam.getPresets(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.getPresets(options, function(err, stream, xml) {
                             // Get the preset token of the specified preset name
                             var preset = stream[presetName];
                             
@@ -377,20 +386,20 @@
                             // Create/update the preset, based on the preset token.  The device will save the current camera parameters
                             // (XY coordinates, zoom level and a focus adjustment) so that the device can move afterwards to that saved 
                             // preset position (via the GotoPreset action).
-                            node.cam.gotoPreset(options, function(err, stream, xml) {
+                            node.deviceConfig.cam.gotoPreset(options, function(err, stream, xml) {
                                 utils.handleResult(node, err, stream, xml, newMsg);
                             });
                         });
                         
                         break;                                             
                     case "getNodes":
-                        node.cam.getNodes(function(err, stream, xml) {
+                        node.deviceConfig.cam.getNodes(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
                         break;    
                     case "getConfigurations":
-                        node.cam.getConfigurations(function(err, stream, xml) {
+                        node.deviceConfig.cam.getConfigurations(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -400,7 +409,7 @@
                     
                         configurationToken = 'PtzConf1'; // TODO make adjustable (is reeds voorzien op config screen, maar nog niet via input message)
                         
-                        node.cam.getConfigurationOptions(configurationToken, function(err, stream, xml) {
+                        node.deviceConfig.cam.getConfigurationOptions(configurationToken, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -412,7 +421,7 @@
                             'profileToken': node.profile,
                         };
                         
-                        node.cam.getStatus(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.getStatus(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -424,7 +433,7 @@
                             'zoom': node.stopZoom
                         };
                         
-                        node.cam.stop(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.stop(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -440,6 +449,12 @@
             catch (exc) {
                 console.log("Action " + action + " failed:");
                 console.log(exc);
+            }
+        });
+        
+        node.on("close",function() { 
+            if (node.listener) {
+                node.deviceConfig.removeListener("onvif_status", node.listener);
             }
         });
     }
