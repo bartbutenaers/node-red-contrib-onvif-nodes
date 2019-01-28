@@ -28,15 +28,24 @@
         this.videoEncoderConfigToken = config.videoEncoderConfigToken;
         this.protocol = config.protocol;
         this.stream = config.stream;
-        this.cam = null;
         this.snapshotUriMap = new Map();
         
         var node = this; 
         
         // Retrieve the config node, where the device is configured
         node.deviceConfig = RED.nodes.getNode(config.deviceConfig);
-    
-        utils.initializeDevice(node, 'media');
+        
+        if (node.deviceConfig) {
+            node.listener = function(onvifStatus) {
+                utils.setNodeStatus(node, 'media', onvifStatus);
+            }
+            
+            // Start listening for Onvif config nodes status changes
+            node.deviceConfig.addListener("onvif_status", node.listener);
+            
+            // Show the current Onvif config node status already
+            utils.setNodeStatus(node, 'media', node.deviceConfig.onvifStatus);
+        }
         
         function getSnapshot(uri, newMsg) {
             require('request').get(uri, {
@@ -76,13 +85,13 @@
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.cam) {
-                console.warn('Ignoring input message since the device connection is not complete');
+            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                //console.warn('Ignoring input message since the device connection is not complete');
                 return;
             }
 
-            if (!node.cam.capabilities['media']) {
-                console.warn('Ignoring input message since the device does not support the media service');
+            if (!node.deviceConfig.cam.capabilities['media']) {
+                //console.warn('Ignoring input message since the device does not support the media service');
                 return;
             } 
        
@@ -101,7 +110,7 @@
             // TODO check this only for actions where profileToken is needed
             // TODO when device disconnected, this gives "Cannot read property '$' of undefined" due to missing videosources...
             /*if (!profileToken) {
-                if (!node.cam.getActiveSources()) {
+                if (!node.deviceConfig.cam.getActiveSources()) {
                     console.warn('No default video source available');
                     return;
                 }
@@ -120,7 +129,7 @@
                             'protocol': protocol
                         };
 
-                        node.cam.getStreamUri(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.getStreamUri(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break; 
@@ -130,70 +139,70 @@
                             'profileToken': profileToken
                         };
 
-                        node.cam.getSnapshotUri(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.getSnapshotUri(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break; 
                     case "getVideoEncoderConfiguration": 
                         // If the videoEncoderConfigToken doesn't exist, the first element from the videoEncoderConfigurations array will be returned
-                        node.cam.getVideoEncoderConfiguration(videoEncoderConfigToken, function(err, stream, xml) {
+                        node.deviceConfig.cam.getVideoEncoderConfiguration(videoEncoderConfigToken, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;                       
                      case "getVideoEncoderConfigurations": 
-                        node.cam.getVideoEncoderConfigurations(function(err, stream, xml) {
+                        node.deviceConfig.cam.getVideoEncoderConfigurations(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;    
                      case "getVideoEncoderConfigurationOptions": 
                         // If the videoEncoderConfigToken doesn't exist, the first element from the videoEncoderConfigurations array will be used
-                        node.cam.getVideoEncoderConfigurationOptions(videoEncoderConfigToken, function(err, stream, xml) {
+                        node.deviceConfig.cam.getVideoEncoderConfigurationOptions(videoEncoderConfigToken, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;                        
                      case "getProfiles": 
-                        node.cam.getProfiles(function(err, stream, xml) {
+                        node.deviceConfig.cam.getProfiles(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;                        
                      case "getVideoSources": 
-                        node.cam.getVideoSources(function(err, stream, xml) {
+                        node.deviceConfig.cam.getVideoSources(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;                       
                      case "getVideoSourceConfigurations": 
-                        node.cam.getVideoSourceConfigurations(function(err, stream, xml) {
+                        node.deviceConfig.cam.getVideoSourceConfigurations(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;                   
                      case "getAudioSources": 
-                        node.cam.getAudioSources(function(err, stream, xml) {
+                        node.deviceConfig.cam.getAudioSources(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;                
                      case "getAudioSourceConfigurations": 
-                        node.cam.getAudioSourceConfigurations(function(err, stream, xml) {
+                        node.deviceConfig.cam.getAudioSourceConfigurations(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break; 
                      case "getAudioEncoderConfigurations": 
-                        node.cam.getAudioEncoderConfigurations(function(err, stream, xml) {
+                        node.deviceConfig.cam.getAudioEncoderConfigurations(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;    
                      case "getAudioOutputs": 
-                        node.cam.getAudioOutputs(function(err, stream, xml) {
+                        node.deviceConfig.cam.getAudioOutputs(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;    
                      case "getAudioOutputConfigurations":
-                        node.cam.getAudioOutputConfigurations(function(err, stream, xml) {
+                        node.deviceConfig.cam.getAudioOutputConfigurations(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;   
                     case "getOSDs": 
                         // If the videoEncoderConfigToken doesn't exist, all available OSD's will be requested
-                        node.cam.getOSDs(videoEncoderConfigToken, function(err, stream, xml) {
+                        node.deviceConfig.cam.getOSDs(videoEncoderConfigToken, function(err, stream, xml) {
                             // Onvif OSD implementation is optional and most manufactures did not implement it.
                             // This means we will arrive here often ... 
                             // Most camera's will offer another REST interface to check and configure OSD texts, but not based on OnVif.
@@ -209,7 +218,7 @@
                                 'profileToken': profileToken
                             };
 
-                            node.cam.getSnapshotUri(options, function(err, stream, xml) {
+                            node.deviceConfig.cam.getSnapshotUri(options, function(err, stream, xml) {
                                 // Cache the URL for the next time
                                 node.snapshotUriMap.set(profileToken, stream.uri);
                                 getSnapshot(stream.uri, newMsg);
@@ -228,13 +237,13 @@
                         };
                         
                         // Create an empty new deletable media profile
-                        node.cam.createProfile(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.createProfile(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
                         break;
                     case "deleteProfile":
-                        node.cam.deleteProfile(profileToken, function(err, stream, xml) {
+                        node.deviceConfig.cam.deleteProfile(profileToken, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
 
@@ -276,7 +285,7 @@
                             'sessionTimeout': node.videoEncoderConfigName
                         };
                         
-                        node.cam.setVideoEncoderConfiguration(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.setVideoEncoderConfiguration(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });;
 
@@ -292,6 +301,12 @@
             catch (exc) {
                 console.log("Action " + action + " failed:");
                 console.log(exc);
+            }
+        });
+        
+        node.on("close",function() { 
+            if (node.listener) {
+                node.deviceConfig.removeListener("onvif_status", node.listener);
             }
         });
     }
