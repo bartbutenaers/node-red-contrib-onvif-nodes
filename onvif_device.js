@@ -20,26 +20,35 @@
     
     function OnVifDeviceNode(config) {
         RED.nodes.createNode(this, config);
-        this.action           = config.action;
-        this.cam              = null;
+        this.action = config.action;
         
         var node = this;
         
         // Retrieve the config node, where the device is configured
-        this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
-
-        utils.initializeDevice(node, 'TODO');
+        node.deviceConfig = RED.nodes.getNode(config.deviceConfig);
+        
+        if (node.deviceConfig) {
+            node.listener = function(onvifStatus) {
+                utils.setNodeStatus(node, 'device', onvifStatus);
+            }
+            
+            // Start listening for Onvif config nodes status changes
+            node.deviceConfig.addListener("onvif_status", node.listener);
+            
+            // Show the current Onvif config node status already
+            utils.setNodeStatus(node, 'device', node.deviceConfig.onvifStatus);
+        }
 
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.cam) {
-                console.warn('Ignoring input message since the device connection is not complete');
+            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                //console.warn('Ignoring input message since the device connection is not complete');
                 return;
             }
 
-            if (!node.cam.capabilities['TODO']) {
-                console.warn('Ignoring input message since the device does not support the media service');
+            if (!node.deviceConfig.cam.capabilities['device']) {
+                //console.warn('Ignoring input message since the device does not support the device service');
                 return;
             }
             
@@ -250,31 +259,12 @@
             setNTP
             */
         });
+        
+        node.on("close",function() { 
+            if (node.listener) {
+                node.deviceConfig.removeListener("onvif_status", node.listener);
+            }
+        });
     }
     RED.nodes.registerType("onvif-device",OnVifDeviceNode);
-    
-    // Make all the available profiles accessible for the node's config screen
-    RED.httpAdmin.get('/onvifdevice/:cmd/:id', RED.auth.needsPermission('onvifdevice.read'), function(req, res){
-        var node = RED.nodes.getNode(req.params.id);
-
-        if (req.params.cmd === "profiles") {
-            if (!node || !node.cam) {
-                console.log("Cannot determine profile list from node " + req.params.id);
-                return;
-            }
-            
-            var profileNames = [];
-            
-            for(var i = 0; i < node.cam.profiles.length; i++) {
-                profileNames.push(
-                    {
-                        name: node.cam.profiles[i].name,
-                        token: node.cam.profiles[i].$.token
-                    });
-            }
-            
-            // Return a list of all available profiles for the specified Onvif node
-            res.json(profileNames);
-        }
-    });
 }
