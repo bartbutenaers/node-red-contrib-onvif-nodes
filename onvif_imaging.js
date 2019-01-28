@@ -20,26 +20,35 @@
 
     function OnVifImagingNode(config) {
         RED.nodes.createNode(this, config);
-        this.action            = config.action;
-        this.cam               = null;
+        this.action = config.action;
         
         var node = this; 
         
         // Retrieve the config node, where the device is configured
-        this.deviceConfig = RED.nodes.getNode(config.deviceConfig);
-
-        utils.initializeDevice(node, 'imaging');
+        node.deviceConfig = RED.nodes.getNode(config.deviceConfig);
+        
+        if (node.deviceConfig) {
+            node.listener = function(onvifStatus) {
+                utils.setNodeStatus(node, 'imaging', onvifStatus);
+            }
+            
+            // Start listening for Onvif config nodes status changes
+            node.deviceConfig.addListener("onvif_status", node.listener);
+            
+            // Show the current Onvif config node status already
+            utils.setNodeStatus(node, 'imaging', node.deviceConfig.onvifStatus);
+        }
 
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.cam) {
-                console.warn('Ignoring input message since the device connection is not complete');
+            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                //console.warn('Ignoring input message since the device connection is not complete');
                 return;
             }
 
-            if (!node.cam.capabilities['imaging']) {
-                console.warn('Ignoring input message since the device does not support the media service');
+            if (!node.deviceConfig.cam.capabilities['imaging']) {
+                //console.warn('Ignoring input message since the device does not support the imaging service');
                 return;
             } 
             
@@ -56,17 +65,17 @@
             try {
                 switch (action) { 
                     case 'getSettings':
-                        node.cam.getImagingSettings(function(err, stream, xml) {
+                        node.deviceConfig.cam.getImagingSettings(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;
                     case 'getServiceCapabilities':
-                        node.cam.getImagingServiceCapabilities(function(err, stream, xml) {
+                        node.deviceConfig.cam.getImagingServiceCapabilities(function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;
                     case "reconnect":
-                        utils.initializeDevice(node, 'media');
+                        utils.initializeDevice(node, 'imaging');
                         break;
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
@@ -76,6 +85,12 @@
             catch (exc) {
                 console.log("Action " + action + " failed:");
                 console.log(exc);
+            }
+        });
+        
+        node.on("close",function() { 
+            if (node.listener) {
+                node.deviceConfig.removeListener("onvif_status", node.listener);
             }
         });
     }
