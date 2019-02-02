@@ -29,10 +29,56 @@
         this.xaddress = config.xaddress;
         this.name     = config.name; 
         // Remark: user name and password are stored in this.credentials
-
+        
         var node = this;
         
-        debugger;
+        this.getProfiles = function(clientConfig, response) {
+            var profileNames = [];
+            var config = {};
+            
+            // TODO checken of er altijd een this.credentials bestaat, indien username en paswoord niet ingevuld is.
+            
+            // The client credentials will only contain the data (i.e. user name or password) which has changed.
+            // The other data is not changed, so we will need use the original data stored on the server.
+            clientConfig.username = clientConfig.user || this.credentials.user;
+            clientConfig.password = clientConfig.password || this.credentials.password;
+                    
+            // When the user appends some new text to the existing password, then the original password is passed via the client as __PWRD__
+            // So replace __PWRD__ again by the original password.
+            if (clientConfig.password && this.credentials.password) {
+               clientConfig.password.replace('___PWRD__', this.credentials.password);
+            }
+     
+            if (this.credentials.user !== clientConfig.user || this.credentials.password !== clientConfig.password || this.xaddress !== clientConfig.hostname){
+                var cam = new onvif.Cam(clientConfig, function(err) {             
+                    if (!err) {
+                        if (cam.profiles) {
+                            for(var i = 0; i < cam.profiles.length; i++) {
+                                profileNames.push({
+                                    label: cam.profiles[i].name,
+                                    value: cam.profiles[i].$.token
+                                });
+                            }
+                        }
+                        
+                        response.json(profileNames);
+                    }
+                });
+            }
+            else {
+                if (this.cam.profiles) {
+                    // The current deployed cam is still up-to-date, so let’s use that one (for performance reasons)
+                    for(var i = 0; i < this.cam.profiles.length; i++) {
+                        profileNames.push({
+                            label: this.cam.profiles[i].name,
+                            value: this.cam.profiles[i].$.token
+                        });
+                    }
+                }
+                
+                response.json(profileNames);
+            }
+        }
         
         // Without an xaddress, it is impossible to connect to an Onvif device
         if (!this.xaddress) {
@@ -44,7 +90,7 @@
         setOnvifStatus(node, "initializing");
         
         var options = {};
-        options.hostname = this.xaddress;
+        options.hostname= this.xaddress;
         
         if (this.credentials && this.credentials.user) {
             options.username = this.credentials.user;
@@ -74,30 +120,26 @@
             password: {type: "password"}
         }
     });
-    
         
     // Make all the available profiles accessible for the node's config screen
-    RED.httpAdmin.get('/onvifdevice/:cmd/:id', RED.auth.needsPermission('onvifdevice.read'), function(req, res){
-        var node = RED.nodes.getNode(req.params.id);
+    RED.httpAdmin.get('/onvifdevice/:cmd/:config_node_id', RED.auth.needsPermission('onvifdevice.read'), function(req, res){
+        var configNode = RED.nodes.getNode(req.params.config_node_id);
+        
+        debugger;
 
         if (req.params.cmd === "profiles") {
-            if (!node || !node.deviceConfig || !node.deviceConfig.cam) {
-                console.log("Cannot determine profile list from node " + req.params.id);
+            if (!configNode) {
+                console.log("Cannot determine profile list from node " + req.params.config_node_id);
                 return;
             }
-            
-            var profileNames = [];
-            
-            for(var i = 0; i < node.deviceConfig.cam.profiles.length; i++) {
-                profileNames.push(
-                    {
-                        name: node.deviceConfig.cam.profiles[i].name,
-                        token: node.deviceConfig.cam.profiles[i].$.token
-                    });
-            }
-            
-            // Return a list of all available profiles for the specified Onvif node
-            res.json(profileNames);
+           
+            // Get the profiles of the camera, based on the config data on the client, instead of the config data
+            // stored inside this config node.  Reason is that the config data on the client might be 'dirty', i.e. changed
+            // by the user but not deployed yet on this config node.  But the client still needs to be able to get the profiles
+            // corresponding to that dirty config node.  That way the config screen can be filled with profiles already...
+            // But when the config data is not dirty, we will just use the profiles already loaded in this config node (which is faster).
+            // See https://discourse.nodered.org/t/initializing-config-screen-based-on-new-config-node/7327/10?u=bartbutenaers
+            configNode.getProfiles(req.query, res);
         }
     });
 }
