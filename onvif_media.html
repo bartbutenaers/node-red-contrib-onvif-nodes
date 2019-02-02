@@ -11,38 +11,6 @@
   limitations under the License.
 -->
 <script type="text/javascript">
-    function loadProfiles(node) {
-        // Load the available profiles from the server
-        $.getJSON('onvifdevice/profiles/' + node.id, function(data) {
-            $("#node-input-profileToken").empty();
-                    
-            // The response is a json array, containing all the available profiles
-            //data.sort();
-            
-            // Allow the user to specify the profile via the input message
-            //$("<option value='message'> **MESSAGE BASED**</option>").appendTo("#node-input-profileToken");
-        
-            // Show all available profiles in the dropdown
-            for (i = 0; i < data.length; i++) {
-                var profile = data[i];
-                $("<option value='" + profile.token + "'> " + profile.name + " (" + profile.token + ")" + "</option>").appendTo("#node-input-profileToken");
-            }   
-            
-            // TODO Set the device's default profile at the start
-            if (!node.profileToken) {
-                //node.profileToken = 'length';
-            }
-            
-            // When a categorie is already available, make sure it is selected in the dropdown
-            if (node.profileToken) {
-                $("#node-input-profileToken").val(node.profileToken);
-                
-                // Setting the dropdown value from javascript (using val()), won't trigger the change-event automatically
-                $('#node-input-profileToken').trigger('change');
-            }
-        });
-    }
-
     RED.nodes.registerType('onvif-media',{
         category: 'OnVif',
         color: '#ff758d',
@@ -67,13 +35,51 @@
         oneditprepare: function() { 
             var node = this;
         
-            loadProfiles(node);
-            
-            // When another config node is selected, the corresponding profiles should be loaded
-            $("#node-input-deviceConfig").change(function() {
-            debugger;
-            // TODO don't do this at startup because the current profile value should be cleared here ...
-                loadProfiles(node);
+            try {
+                $("#node-input-profileToken").autocomplete( "destroy" );
+            } 
+            catch(err) {
+            }
+            $("#node-input-profileToken-search").click(function() {
+                $("#node-input-profileToken-search").addClass('disabled');
+                
+                var configNodeId = $("#node-input-deviceConfig").val();
+                
+                if (!configNodeId) {
+                    // No config node has been specified, so no use to connect to the server ...
+                    return;
+                }
+                                
+                configNode = RED.nodes.node(configNodeId);
+             
+                // All client-side config data should be send to the server (since we don't know if it is dirty or not).
+                var configData = {};
+                configData.hostname = configNode.xaddress;
+                if (configNode.credentials) {
+                    configData.user = configNode.credentials.user;
+                    configData.password = configNode.credentials.password;
+                }
+                
+                $.getJSON("onvifdevice/profiles/" + configNodeId, configData, function(profiles) {
+                    $("#node-input-profileToken-search").removeClass('disabled');
+                    $("#node-input-profileToken").autocomplete({
+                        source:profiles,
+                        minLength:0,
+                        select: function(event, ui) {
+                            // Make sure the label is displayed in the text field (instead of the value)
+                            event.preventDefault();
+                            $("#node-input-profileToken").val(ui.item.label);
+                        },
+                        focus: function(event, ui) {
+                            // Make sure the label is displayed when hovering (instead of the value)
+                            event.preventDefault();
+                            $("#node-input-profileToken").val(ui.item.label);
+                        },
+                        close: function( event, ui ) {
+                            $("#node-input-profileToken").autocomplete( "close" );
+                        }
+                    }).autocomplete("search","");
+                });
             });
             
             // When the 'action' combobox value changes, only the corresponding field(s) parameter fields should be displayed
@@ -156,8 +162,9 @@
         </select>
     </div>
     <div class="form-row actionParam-row" id="profileToken-div">
-        <label for="node-input-profileToken"><i class="fa fa-hashtag"></i> Profile token</label>
-        <select id="node-input-profileToken"></select>
+        <label for="node-input-profileToken"><i class="fa fa-random"></i> Profile</label>
+        <input type="text" id="node-input-profileToken" style="width:66%;">
+        <a id="node-input-profileToken-search" class="btn"><i id="node-config-lookup-serial-icon" class="fa fa-search"></i></a>
     </div>
     <div class="form-row actionParam-row" id="profileName-div">
         <label for="node-input-profileName"><i class="fa fa-hashtag"></i> Profile name</label>
