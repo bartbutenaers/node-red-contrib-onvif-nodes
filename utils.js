@@ -13,52 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
-exports.initializeDevice = function(node, serviceName) {
-    const onvif  = require('onvif');
-    
-    node.cam = null;
-        
-    // Create an OnvifDevice object, if a device configuration has been specified
-    if (node.deviceConfig) {
-        node.status({fill:"yellow",shape:"dot",text:"initializing"});
-        
-        if (node.deviceConfig.credentials && node.deviceConfig.credentials.user) {
-            var options = {
-                hostname: node.deviceConfig.xaddress,
-                username: node.deviceConfig.credentials.user,
-                password: node.deviceConfig.credentials.password
-            };
-        }
-        else {
-            var options = {
-                hostname: node.deviceConfig.xaddress
-            };
-        }
-        
-        // Create a new camera instance.
-        // It tries to connect automatically to the device, and load a lot of data.
-        new onvif.Cam(options, function(err) { 
-            // As soon as the device has been setup, we will keep a reference to it
-            node.cam = this;
-            
-            if (err) {
-                node.status({fill:"red",shape:"ring",text:"disconnected"});
-            }
-            else {  
-                var service = node.cam.capabilities[serviceName];
+exports.setNodeStatus = function(node, serviceName, onvifStatus) {
+    switch(onvifStatus) {
+        case "unconfigured":
+            node.status({fill:"red",shape:"ring",text:onvifStatus});
+            break;
+        case "initializing":
+            node.status({fill:"yellow",shape:"dot",text:onvifStatus});
+            break;
+        case "disconnected":
+            node.status({fill:"red",shape:"ring",text:onvifStatus});
+            break;
+        case "connected":
+            var service = node.deviceConfig.cam.capabilities[serviceName];
                 
-                // Check whether the Onvif device implements the specified interface
-                if (service && service.XAddr) {
-                    node.status({fill:"green",shape:"dot",text:"connected"}); 
-                }
-                else {
-                    node.status({fill:"red",shape:"ring",text:"unsupported"});  
-                }
+            // When connected to the Onvif device, check whether it supports the specified service
+            if (service && service.XAddr) {
+                node.status({fill:"green",shape:"dot",text:onvifStatus}); 
             }
-        });
-    }
-    else {
-        node.status({fill:"red",shape:"ring",text:"unconfigured"});
+            else {
+                node.status({fill:"red",shape:"ring",text:"unsupported"});  
+            }
+            break;
+        case "":
+            node.status({});
+            break;
+        default:
+            node.status({fill:"red",shape:"ring",text:"unknown"});
     }
 };
 
