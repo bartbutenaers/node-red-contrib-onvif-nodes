@@ -231,7 +231,7 @@
                         });
                         break;      */        
                     case "reconnect":
-                        utils.initializeDevice(node, 'media');
+                        node.deviceConfig.cam.connect();
                         break
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
