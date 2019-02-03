@@ -405,14 +405,22 @@
                         
                         break;      
                     case "getConfigurationOptions":
-                        // TODO error in onvif library due to missing zoom in Panasonic cam (see https://github.com/agsh/onvif/issues/103)
-                    
                         configurationToken = 'PtzConf1'; // TODO make adjustable (is reeds voorzien op config screen, maar nog niet via input message)
-                        
-                        node.deviceConfig.cam.getConfigurationOptions(configurationToken, function(err, stream, xml) {
-                            utils.handleResult(node, err, stream, xml, newMsg);
-                        });
-                        
+
+                        // getConfigurationOptions will result in an uncaught exception when getConfigurations hasn't been called in advance...
+                        if (!node.deviceConfig.cam.configurations) {
+                            node.deviceConfig.cam.getConfigurations(function(err, stream, xml) {
+                                node.deviceConfig.cam.getConfigurationOptions(configurationToken, function(err, stream, xml) {
+                                    utils.handleResult(node, err, stream, xml, newMsg);
+                                });
+                            });
+                        }
+                        else {
+                            node.deviceConfig.cam.getConfigurationOptions(configurationToken, function(err, stream, xml) {
+                                utils.handleResult(node, err, stream, xml, newMsg);
+                            });
+                        }
+                                            
                         break;        
                     case "getStatus":
                         // TODO error in onvif library due to missing zoom in Panasonic cam (see https://github.com/agsh/onvif/issues/103)
@@ -439,7 +447,7 @@
                         
                         break;
                     case "reconnect":
-                        utils.initializeDevice(node, 'media');
+                        node.deviceConfig.cam.connect();
                         break;
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
