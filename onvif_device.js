@@ -61,177 +61,103 @@
             
             newMsg.xaddr = this.deviceConfig.xaddress;
             newMsg.action = action;
-   
+
             try {
                 switch (action) {
-                    /*case "getInformation":
-                        newMsg.payload = node.device.getInformation();
-                        node.send(newMsg);
-                        break;
-                    case "getProfileList":
-                        newMsg.payload = node.device.getProfileList();
-                        node.send(newMsg);
+                    case "getDeviceInformation":
+                        node.deviceConfig.cam.getDeviceInformation(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
+                        });
                         break;
                     case "getHostname":
-                        node.device.services.device.getHostname().then((result) => {
-                            newMsg.payload = result.data.GetHostnameResponse.HostnameInformation;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
+                        node.deviceConfig.cam.getHostname(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
                         });
-                        break;
-                    case "getDNS":
-                        node.device.services.device.getDNS().then((result) => {
-                            newMsg.payload = result.data.GetDNSResponse.DNSInformation.DNSFromDHCP;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;
-                    case "getNetworkInterfaces":
-                        node.device.services.device.getNetworkInterfaces().then((result) => {
-                            newMsg.payload = result.data.GetNetworkInterfacesResponse.NetworkInterfaces;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;
-                    case "getNetworkProtocols":
-                        node.device.services.device.getNetworkProtocols().then((result) => {
-                            newMsg.payload = result.data.GetNetworkProtocolsResponse.NetworkProtocols;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;                    
-                    case "getNetworkDefaultGateway":
-                        node.device.services.device.getNetworkDefaultGateway().then((result) => {
-                            newMsg.payload = result.data.GetNetworkDefaultGatewayResponse.NetworkGateway;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;                      
+                        break;               
                     case "getSystemDateAndTime":
-                        node.device.services.device.getSystemDateAndTime().then((result) => {
-                            newMsg.payload = result.data.GetSystemDateAndTimeResponse.SystemDateAndTime;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
+                        node.deviceConfig.cam.getSystemDateAndTime(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
                         });
                         break;                     
-                    case "getRelayOutputs":
-                        node.device.services.device.getRelayOutputs().then((result) => {
-                            newMsg.payload = result.data.GetRelayOutputsResponse;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;                     
-                    case "getNTP":
-                        node.device.services.device.getNTP().then((result) => {
-                            newMsg.payload = result.data.GetNTPResponse.NTPInformation;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;  
-                    case "getDynamicDNS":
-                        node.device.services.device.getDynamicDNS().then((result) => {
-                            newMsg.payload = result.data.GetDynamicDNSResponse.DynamicDNSInformation;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;  
                     case "getServices":
-                        var params = {
-                            'IncludeCapability': true
-                        };
-
-                        // Following snippet results in "Error: 500 Internal Server Error - Method Not Found"
-                        //promise = node.device.services.device.getServices(params).then((result) => {
-                        //    newMsg.payload = result;
-                        //    node.send(newMsg);
-                        //}).catch((error) => {
-                        //    console.error(error);  
-                        //});
-                        newMsg.payload = node.device.services;
-                        node.send(newMsg);
-                        break;
-                    case "getCurrentProfile":
-                        debugger;
-                        newMsg.payload = node.device.getCurrentProfile();
-                        node.send(newMsg);
+                        node.deviceConfig.cam.getCapabilities(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
+                        });
                         break;
                     case "getCapabilities":
-                        node.device.services.device.getCapabilities().then((result) => {
-                            newMsg.payload = result.data.GetCapabilitiesResponse.Capabilities;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;      
-                     case "getWsdlUrl":
-                        node.device.services.device.getWsdlUrl().then((result) => {
-                            newMsg.payload = result.data.GetWsdlUrlResponse.WsdlUrl;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;
-                    case "getDiscoveryMode":
-                        node.device.services.device.getDiscoveryMode().then((result) => {
-                            newMsg.payload = result.data.GetDiscoveryModeResponse.DiscoveryMode;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
+                        node.deviceConfig.cam.getCapabilities(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
                         });
                         break;
                     case "getScopes":
-                        node.device.services.device.getScopes().then((result) => {
-                            newMsg.payload = result.data.GetScopesResponse.Scopes;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
+                        node.deviceConfig.cam.getScopes(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
                         });
                         break;
-                    case "reboot":
-                        node.device.services.device.reboot().then((result) => {
-                            newMsg.payload = result.data.SystemRebootResponse.Message;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
+                    case "systemReboot":
+                        node.deviceConfig.cam.systemReboot(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
                         });
                         break;
-                    case "getUsers":
-                        node.device.services.device.getUsers().then((result) => {
-                            newMsg.payload = result.data.GetUsersResponse.User;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;
-                    case "getZeroConfiguration":
-                        node.device.services.device.getZeroConfiguration().then((result) => {
-                            newMsg.payload = result.data.GetZeroConfigurationResponse.ZeroConfiguration;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
-                        });
-                        break;     
                     case "getServiceCapabilities":
-                        // TODO dit geeft een "Method Not Found"
-                        node.device.services.device.getServiceCapabilities().then((result) => {
-                            debugger;
-                            //TODO newMsg.payload = result.data.;
-                            node.send(newMsg);
-                        }).catch((error) => {
-                            console.error(error);
+                        node.deviceConfig.cam.getCapabilities(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
                         });
-                        break;      */        
+                        break;      
                     case "reconnect":
-                        node.deviceConfig.cam.connect();
+                        node.deviceConfig.cam.connect(function(err) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                        });
                         break
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
@@ -242,22 +168,6 @@
                 console.log("Action " + action + " failed:");
                 console.log(exc);
             }
-            
-            // TODOs
-            // Heeft dit zin ?? Is dit enkel op de device instance in deze node ???
-            // device.changeProfile(min_index);
-            
-            /*
-            setscopes, addscopes, removescopes
-            setHostname
-            setDNS
-            setNetworkProtocols
-            setNetworkDefaultGateway
-            createUsers
-            deleteUsers
-            setUser
-            setNTP
-            */
         });
         
         node.on("close",function() { 
