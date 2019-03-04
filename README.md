@@ -50,7 +50,7 @@ Or if you have programming skills, you might create two pull requests instead.
 ## Discovery node
 To search the network for Onvif-compliant devices, the Discovery node can be used.  When this node is triggered (by means of an input message), it will send an OnVif broadcast to all the devices on the network.  All OnVif compliant devices will respond to this, and they will be listed in the output message `msg.payload`:
 
-![Broadcast flow](/master/images/onvif_discovery_flow.png)
+![Broadcast flow](/images/onvif_discovery_flow.png)
 
 ```
 [{"id":"a19788d1.afaf98","type":"onvif-discovery","z":"50df184.124f2e8","name":"","timeout":5,"separate":true,"x":500,"y":480,"wires":[["ed0cc23.44c014"]]},{"id":"be6e8353.f7716","type":"inject","z":"50df184.124f2e8","name":"Start searching","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":280,"y":480,"wires":[["a19788d1.afaf98"]]},{"id":"ed0cc23.44c014","type":"debug","z":"50df184.124f2e8","name":"Onvif devices","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","x":700,"y":480,"wires":[]}]
