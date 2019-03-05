@@ -67,17 +67,28 @@ For every discovered OnVif compliant device, following data will be generated in
 
 ![Broadcast debug](/images/onvif_discovery_debug.png)
 
-The ***'XAddrs'*** field contains the IP address, which will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  In all other Onvif nodes (Media, PTZ ...), these device config nodes can be selected (in the dropdown) to send Onvif commands to the device:
-
-![Onvif config](/images/onvif_config_node.png)
-
-CAUTION: the IP addres of the Onvif device should not be changed by your DHCP server (e.g. inside your router), otherwise the Onvif device won't be accessible anymore afterwards.
+The ***'XAddrs'*** field contains the IP address, which will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  
 
 During discovery the node status will be *'discovering'*.  But once the timeout has passed, the discovery process is *'completed'* and the number of discovered devices will be displayed:
 
-![Broadcast status](/master/images/onvif_discovery_status.png)
+![Broadcast status](/images/onvif_discovery_status.png)
 
 As long as the discovery process is active, no second discovery process can be started (via the same Discovery node).
+
+## Config node
+The config node contains all information required to connect to an Onvif device.  When you don't know the IP address of your Onvif nodes, please see the Discovery node above.
+
+In all other Onvif nodes (Media, PTZ ...), these device config nodes can be selected (in the dropdown) to send Onvif commands to the device:
+
+![Onvif config](/images/onvif_config_node.png)
+
+The config node will handle all communication with the Onvif device:
+
+![Config node communication](/images/onvif_config_comm.png)
+
+Since all Onvif nodes (of the same Onvif device) share the same config node, that config node will load the required data only once from the Onvif device.  This caching mechanism reduces the communication between Node-RED and the Onvif device.
+
+CAUTION: the IP addres of the Onvif device should not be changed by your DHCP server (e.g. inside your router), otherwise the Onvif device won't be accessible anymore afterwards.
 
 ## Media node
 
