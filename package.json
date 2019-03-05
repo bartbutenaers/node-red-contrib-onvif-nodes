@@ -26,7 +26,8 @@
             "onvif-imaging": "onvif_imaging.js",
             "onvif-media": "onvif_media.js",
             "onvif-ptz": "onvif_ptz.js",
-            "onvif-recording": "onvif_recording.js"
+            "onvif-recording": "onvif_recording.js",
+            "onvif-events": "onvif_events.js"
         }
     }
 }
