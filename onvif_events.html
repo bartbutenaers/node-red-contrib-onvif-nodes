@@ -16,13 +16,14 @@
         color: '#ff758d',
         defaults: {
             name: {value:""},
-            deviceConfig: {value:"", type: "onvif-config"}
+            deviceConfig: {value:"", type: "onvif-config"},
+            action: {value:"", required: false}
         },          
         inputs:1,
         outputs:1,
         icon: "event.png",
         label: function() {
-            return this.name||"OnVif device";
+            return this.name||"OnVif events";
         }
     });
 </script>
@@ -35,6 +36,17 @@
     </div>
     <br>
     <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-wrench"></i> Action</label>
+        <select id="node-input-action">
+            <option value=""></option>
+            <option value="start">Start listening</option>
+            <option value="stop">Stop listening</option>
+            <option value="getEventProperties">Get event properties</option>
+            <option value="getEventServiceCapabilities">Get event service capabilities</option>
+        </select>
+    </div>
+    <br>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
@@ -44,6 +56,7 @@
     <p>A node to get events an OnVif compatible IP device.</p>
     <p><strong>Device:</strong><br/>
     The target OnVif-compliant IP device.</p>
-    <p>By sending <code>msg.action=start</code> the node will start receiving events, while <code>msg.action=stop</code> will stop the event stream.</p>
+    <p><strong>Action:</strong><br/>
+    The action that needs to be executed on the target device.  When no action is selected, the action should be specified in the <code>msg.action</code> field of the input message.</p>
 </script>
 
