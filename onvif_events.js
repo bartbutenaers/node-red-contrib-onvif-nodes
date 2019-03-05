@@ -89,6 +89,28 @@
                         node.deviceConfig.cam.removeListener('event', node.eventListener);
                         node.eventListener = null;
                         break;               
+                    case "getEventProperties":
+                        node.deviceConfig.cam.getEventProperties(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
+                        });
+                        break;
+                    case "getEventServiceCapabilities":
+                        node.deviceConfig.cam.getEventServiceCapabilities(function(err, date, xml) {
+                            if (err) {
+                                console.error(err.message);
+                            }
+                            else {
+                                newMsg.payload = date;
+                                node.send(newMsg);
+                            }
+                        });
+                        break;
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
                         console.log("Action " + action + " is not supported");                    
