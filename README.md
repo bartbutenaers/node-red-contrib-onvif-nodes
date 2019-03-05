@@ -114,6 +114,8 @@ However the flow will become complex and the device's credentials (username/pass
 [{"id":"5756138c.5e3fac","type":"inject","z":"bb2edfc9.1718a","name":"Get snapshot image","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":890,"y":2560,"wires":[["7346f703.240908"]]},{"id":"7346f703.240908","type":"onvifmedia","z":"bb2edfc9.1718a","name":"","deviceConfig":"","profileToken":"","profileName":"","videoEncoderConfigToken":"","videoEncoderConfigName":"","videoEncoderConfigEncoding":"","action":"getSnapshot","protocol":"","stream":"","x":1090,"y":2560,"wires":[["fb09de66.f5ec2"]]},{"id":"fb09de66.f5ec2","type":"image","z":"bb2edfc9.1718a","name":"","width":200,"x":1270,"y":2560,"wires":[]}]
 ```
 
+The resolution of the image depends on the **profile** specified in the node's config screen, e.g. there might be a profile that offers JPEGs with resolution 640x480. 
+
 ## Device Node
 When this node is triggered (by means of an input message), it will generate an output message `msg.payload` containing information about that device:
 
@@ -143,15 +145,6 @@ This node allows to listen to all the events registered by the device.  The node
 ```
 [{"id":"7ea5e0c3.4d741","type":"inject","z":"26dbe156.c7049e","name":"Start listening","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":910,"y":860,"wires":[["378b6778.87ee38"]]},{"id":"378b6778.87ee38","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"start","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":860,"wires":[["9199d036.ef115"]]},{"id":"e7a5c111.16471","type":"inject","z":"26dbe156.c7049e","name":"Stop listening","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":910,"y":900,"wires":[["1830bf3.8165041"]]},{"id":"1830bf3.8165041","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"start","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":900,"wires":[["9199d036.ef115"]]},{"id":"b0958785.83ca18","type":"debug","z":"26dbe156.c7049e","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"false","x":1580,"y":860,"wires":[]},{"id":"82df60a3.e2b02","type":"inject","z":"26dbe156.c7049e","name":"Get event properties","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":930,"y":940,"wires":[["cd2a67b4.251db8"]]},{"id":"cd2a67b4.251db8","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getEventProperties","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":940,"wires":[["9199d036.ef115"]]},{"id":"9b6039a9.8ed2a8","type":"inject","z":"26dbe156.c7049e","name":"Get event service capabilities","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":960,"y":980,"wires":[["fad5135e.3a95"]]},{"id":"fad5135e.3a95","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getEventServiceCapabilities","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":980,"wires":[["9199d036.ef115"]]},{"id":"9199d036.ef115","type":"onvif-events","z":"26dbe156.c7049e","name":"","deviceConfig":"e6c78b2e.fe4dc8","action":"","x":1410,"y":860,"wires":[["b0958785.83ca18"]]},{"id":"e6c78b2e.fe4dc8","type":"onvif-config","z":"","xaddress":"192.168.1.200","name":"MyCamKitchen"}]
 ```
-
-## Snapshot Node
-When this node is triggered (by means of an input message), it will generate an output message `msg.payload` containing a snapshot image from the camera (as a Buffer).
-
-***TODO screenshot***
-
-The resolution of the image depends on the **profile** specified in the node's config screen.  For example if value *'1_def_profile2'* is set for my Panasonic camera, the snapshot image will be a JPEG of resolution 640x480.  Indeed in the output of the *Device Node*, the resolution of every available profile will be visible:
-
-![Snapshot debug](/images/onvif_snapshot_debug.png)
 
 ## PTZ Node
 This node allows the OnVif device to be PTZ controlled (Pan/Tilt/Zoom), but also offers a home position and multiple preset positions.  Of course this is only possible when the camera hardware supports PTZ.
