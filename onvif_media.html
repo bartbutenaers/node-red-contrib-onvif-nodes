@@ -23,7 +23,7 @@
             videoEncoderConfigName: {value:"", required:false},
             videoEncoderConfigEncoding: {value:"", required:false},
             action: {value:"", required: false},
-            protocol: {value:"HTTP"},
+            protocol: {value:""},
             stream: {value:"RTP-Unicast"}
         },          
         inputs:1,
@@ -36,12 +36,12 @@
             var node = this;
         
             try {
-                $("#node-input-profileToken").autocomplete( "destroy" );
+                $("#node-input-profileName").autocomplete( "destroy" );
             } 
             catch(err) {
             }
-            $("#node-input-profileToken-search").click(function() {
-                $("#node-input-profileToken-search").addClass('disabled');
+            $("#node-input-profileName-search").click(function() {
+                $("#node-input-profileName-search").addClass('disabled');
                 
                 var configNodeId = $("#node-input-deviceConfig").val();
                 
@@ -61,22 +61,22 @@
                 }
                 
                 $.getJSON("onvifdevice/profiles/" + configNodeId, configData, function(profiles) {
-                    $("#node-input-profileToken-search").removeClass('disabled');
-                    $("#node-input-profileToken").autocomplete({
+                    $("#node-input-profileName-search").removeClass('disabled');
+                    $("#node-input-profileName").autocomplete({
                         source:profiles,
                         minLength:0,
                         select: function(event, ui) {
                             // Make sure the label is displayed in the text field (instead of the value)
                             event.preventDefault();
-                            $("#node-input-profileToken").val(ui.item.label);
+                            $("#node-input-profileName").val(ui.item.label);
                         },
                         focus: function(event, ui) {
                             // Make sure the label is displayed when hovering (instead of the value)
                             event.preventDefault();
-                            $("#node-input-profileToken").val(ui.item.label);
+                            $("#node-input-profileName").val(ui.item.label);
                         },
                         close: function( event, ui ) {
-                            $("#node-input-profileToken").autocomplete( "close" );
+                            $("#node-input-profileName").autocomplete( "close" );
                         }
                     }).autocomplete("search","");
                 });
@@ -92,12 +92,15 @@
                 // Depending on the selected action, some specific element(s) should be showed
                 switch (action) {
                     case "getStreamUri":
-                        $("#profileToken-div").show();
+                        $("#profileName-div").show();
                         $("#protocol-div").show();
                         $("#stream-div").show();
                         break;
                     case "getSnapshotUri":
-                        $("#profileToken-div").show();
+                        $("#profileName-div").show();
+                        break;
+                    case "getSnapshot":
+                        $("#profileName-div").show();
                         break;
                     case "getOSDs":  
                         $("#videoEncoderConfigToken-div").show();
@@ -113,7 +116,7 @@
                         $("#profileName-div").show();
                         break;
                     case "deleteProfile":
-                        $("#profileToken-div").show();
+                        $("#profileName-div").show();
                         break;
                     case "setVideoEncoderConfiguration":
                         $("#videoEncoderConfigToken-div").show();
@@ -161,10 +164,10 @@
             <!--  TODO <option value="setVideoEncoderConfiguration">Set video encoder configuration</option>    -->          
         </select>
     </div>
-    <div class="form-row actionParam-row" id="profileToken-div">
-        <label for="node-input-profileToken"><i class="fa fa-random"></i> Profile</label>
-        <input type="text" id="node-input-profileToken" style="width:66%;">
-        <a id="node-input-profileToken-search" class="btn"><i id="node-config-lookup-serial-icon" class="fa fa-search"></i></a>
+    <div class="form-row actionParam-row" id="profileName-div">
+        <label for="node-input-profileName"><i class="fa fa-random"></i> Profile</label>
+        <input type="text" id="node-input-profileName" style="width:66%;">
+        <a id="node-input-profileName-search" class="btn"><i id="node-config-lookup-serial-icon" class="fa fa-search"></i></a>
     </div>
     <div class="form-row actionParam-row" id="profileName-div">
         <label for="node-input-profileName"><i class="fa fa-hashtag"></i> Profile name</label>
