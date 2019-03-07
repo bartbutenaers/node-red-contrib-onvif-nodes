@@ -43,8 +43,10 @@ exports.setNodeStatus = function(node, serviceName, onvifStatus) {
     }
 };
 
-exports.handleResult = function(node, err, stream, xml, newMsg) {
+exports.handleResult = function(node, err, date, xml, newMsg) {
     if (err) {
+        console.error(err.message);
+
         var lowercase = err.message.toLowerCase();
         
         // Sometimes the OnVif device responds with errors like "Method Not Found", "Action Not Implemented", ... 
@@ -57,7 +59,9 @@ exports.handleResult = function(node, err, stream, xml, newMsg) {
         }
     }
     else {
-        newMsg.payload = stream;
-        node.send(newMsg);
+        if (newMsg) {
+            newMsg.payload = date;
+            node.send(newMsg);
+        }
     }
 }
