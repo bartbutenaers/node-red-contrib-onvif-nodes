@@ -66,97 +66,47 @@
                 switch (action) {
                     case "getDeviceInformation":
                         node.deviceConfig.cam.getDeviceInformation(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
                     case "getHostname":
                         node.deviceConfig.cam.getHostname(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         break;               
                     case "getSystemDateAndTime":
                         node.deviceConfig.cam.getSystemDateAndTime(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;                     
                     case "getServices":
                         node.deviceConfig.cam.getCapabilities(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
                     case "getCapabilities":
                         node.deviceConfig.cam.getCapabilities(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
                     case "getScopes":
                         node.deviceConfig.cam.getScopes(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
                     case "systemReboot":
                         node.deviceConfig.cam.systemReboot(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
                     case "getServiceCapabilities":
                         node.deviceConfig.cam.getCapabilities(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;      
                     case "reconnect":
                         node.deviceConfig.cam.connect(function(err) {
-                            if (err) {
-                                console.error(err.message);
-                            }
+                            utils.handleResult(node, err, date, xml, null);
                         });
                         break
                     default:
