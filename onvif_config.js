@@ -80,6 +80,20 @@
             }
         }
         
+        this.getProfileTokenByName = function(profileName) {
+            if (this.cam.profiles) {
+                // Try to find a profile with the specified name, and return the token
+                for(var i = 0; i < this.cam.profiles.length; i++) {
+                    if (this.cam.profiles[i].name === profileName) {
+                        return this.cam.profiles[i].$.token;
+                    }
+                }
+            }
+            
+            // No token found with the specified name
+            return null;
+        }
+        
         // Without an xaddress, it is impossible to connect to an Onvif device
         if (!this.xaddress) {
             this.cam = null;
@@ -124,22 +138,23 @@
     // Make all the available profiles accessible for the node's config screen
     RED.httpAdmin.get('/onvifdevice/:cmd/:config_node_id', RED.auth.needsPermission('onvifdevice.read'), function(req, res){
         var configNode = RED.nodes.getNode(req.params.config_node_id);
-        
-        debugger;
 
-        if (req.params.cmd === "profiles") {
-            if (!configNode) {
-                console.log("Cannot determine profile list from node " + req.params.config_node_id);
-                return;
-            }
-           
-            // Get the profiles of the camera, based on the config data on the client, instead of the config data
-            // stored inside this config node.  Reason is that the config data on the client might be 'dirty', i.e. changed
-            // by the user but not deployed yet on this config node.  But the client still needs to be able to get the profiles
-            // corresponding to that dirty config node.  That way the config screen can be filled with profiles already...
-            // But when the config data is not dirty, we will just use the profiles already loaded in this config node (which is faster).
-            // See https://discourse.nodered.org/t/initializing-config-screen-based-on-new-config-node/7327/10?u=bartbutenaers
-            configNode.getProfiles(req.query, res);
+        switch (req.params.cmd) {
+            case "profiles":
+                if (!configNode) {
+                    console.log("Cannot determine profile list from node " + req.params.config_node_id);
+                    return;
+                }
+               
+                // Get the profiles of the camera, based on the config data on the client, instead of the config data
+                // stored inside this config node.  Reason is that the config data on the client might be 'dirty', i.e. changed
+                // by the user but not deployed yet on this config node.  But the client still needs to be able to get the profiles
+                // corresponding to that dirty config node.  That way the config screen can be filled with profiles already...
+                // But when the config data is not dirty, we will just use the profiles already loaded in this config node (which is faster).
+                // See https://discourse.nodered.org/t/initializing-config-screen-based-on-new-config-node/7327/10?u=bartbutenaers
+                configNode.getProfiles(req.query, res);
+                
+                break;
         }
     });
 }
