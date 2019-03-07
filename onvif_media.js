@@ -116,6 +116,12 @@
                 }
             }*/
             
+            // To make things easier for a user, we will let the user specify profile names.
+            // The corresponding profile token (which is required in Onvif to work with profiles) will be searched here...
+            if (!profileToken && profileName) {
+                profileToken = node.deviceConfig.getProfileTokenByName(profileName);
+            }
+            
             newMsg.xaddr = this.deviceConfig.xaddress;
             newMsg.action = action;
    
@@ -211,17 +217,22 @@
                         break; 
                     case "getSnapshot":
                         var snapshotUri = node.snapshotUriMap.get(profileToken);
-                    
+
                         // Get the uri once (and cache it), when it hasn't been retrieved yet
                         if (!snapshotUri) {
+                            // When no token is specified, the camera will use the default token
                             var options = {
                                 'profileToken': profileToken
                             };
 
                             node.deviceConfig.cam.getSnapshotUri(options, function(err, stream, xml) {
-                                // Cache the URL for the next time
-                                node.snapshotUriMap.set(profileToken, stream.uri);
-                                getSnapshot(stream.uri, newMsg);
+                                utils.handleResult(node, err, stream, xml, null);
+                                
+                                if (!err) {
+                                    // Cache the URL for the next time
+                                    node.snapshotUriMap.set(profileToken, stream.uri);
+                                    getSnapshot(stream.uri, newMsg);
+                                }
                             });
                         }
                         else {
