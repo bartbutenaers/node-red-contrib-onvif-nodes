@@ -93,6 +93,28 @@
                         break;
                 }                     
             });
+        },
+        oneditsave: function() {
+            // Reset all values when no action has been specified 
+            // (because then no fields will be visible to specify data)
+            if ($("#node-input-action").val() === "") {
+                $("#node-input-profile").val("");
+                $("#node-input-panSpeed").val(0.0);
+                $("#node-input-tiltSpeed").val(0.0);
+                $("#node-input-zoomSpeed").val(0.0);
+                $("#node-input-panPosition").val(0.0);
+                $("#node-input-tiltPosition").val(0.0);
+                $("#node-input-zoomPosition").val(0.0);
+                $("#node-input-panTranslation").val(0.0);
+                $("#node-input-tiltTranslation").val(0.0);
+                $("#node-input-zoomTranslation").val(0.0);
+                $("#node-input-time").val(1.0);
+                $("#node-input-preset").val("");
+                $("#node-input-presetName").val("");
+                $("#node-input-stopPanTilt").val(true);
+                $("#node-input-stopZoom").val(true);
+                $("#node-input-configurationToken").val("");
+            }
         }
     });
 </script>
