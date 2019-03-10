@@ -82,7 +82,7 @@
             // The callback function will be called only once, when the broadcast is finished (after the timeout).
             onvif.Discovery.probe(options, function(err, result) {
                 if (err) { 
-                    console.log(err);
+                    console.error(err.message);
                     node.status({fill:"red",shape:"dot",text: "failed"});
                 }
                 else {
