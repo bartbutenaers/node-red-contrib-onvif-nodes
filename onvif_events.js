@@ -91,24 +91,12 @@
                         break;               
                     case "getEventProperties":
                         node.deviceConfig.cam.getEventProperties(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
                     case "getEventServiceCapabilities":
                         node.deviceConfig.cam.getEventServiceCapabilities(function(err, date, xml) {
-                            if (err) {
-                                console.error(err.message);
-                            }
-                            else {
-                                newMsg.payload = date;
-                                node.send(newMsg);
-                            }
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
                     default:
