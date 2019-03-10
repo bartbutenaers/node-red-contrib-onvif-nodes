@@ -23,6 +23,13 @@
         icon: "recording.png",
         label: function() {
             return this.name||"OnVif recording";
+        },
+        oneditsave: function() {
+            // Reset all values when no action has been specified 
+            // (because then no fields will be visible to specify data)
+            if ($("#node-input-action").val() === "") {
+                // No fields yet ...
+            }
         }
     });
 </script>
