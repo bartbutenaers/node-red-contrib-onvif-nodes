@@ -5,6 +5,12 @@ Node Red nodes for communicating with OnVif compliant IP devices
 
 **SEE THIS [DISCUSSION](https://discourse.nodered.org/t/onvif-camera-control/6888) ON THE NODE-RED FORUM FOR LATEST INFORMATION**
 
+***TODO: Discuss which error should be visualised in the node status...***
+
+***TODO: Check whether the credentials are safe within config node (in cam instance), or can all nodes access them??***
+
+***TODO: Discuss how we can have user friendly config screens, to get a usable set of nodes (without needing great tools like ONVIF Device Manager.***
+
 ## Install
 Run the following npm command in your Node-RED user directory (typically ~/.node-red):
 ```
@@ -78,6 +84,8 @@ As long as the discovery process is active, no second discovery process can be s
 ## Config node
 The config node contains all information required to connect to an Onvif device.  When you don't know the IP address of your Onvif nodes, please see the Discovery node above.
 
+***TODO: Add a search box that starts a discovery, and from which users can select an IP address of an Onvif device.***
+
 In all other Onvif nodes (Media, PTZ ...), these device config nodes can be selected (in the dropdown) to send Onvif commands to the device:
 
 ![Onvif config](/images/onvif_config_node.png)
@@ -92,6 +100,10 @@ CAUTION: the IP addres of the Onvif device should not be changed by your DHCP se
 
 ## Media node
 This node offers functionality about all kind of media, like audio/video/images.
+
+***TODO: action 'reconnect' results in TypeError: Cannot read property 'call' of undefined.***
+
+***TODO: action 'get OSDs' results in Method not found exception.***
 
 ### Audio media
 
@@ -161,6 +173,8 @@ When this node is triggered (by means of an input message), it will generate an 
 + ***Reboot***: reboot the device remotely.
 + ***Reconnect***: reconnect to the device again.
 
+***TODO Reconnect fails for my Panasonic (unauthorized), because getSystemDateTime is called underneath.  Normally getSystemDateTime is the only Onvif functionality that shouldn't require credentials ...***
+
 When no action has been specified in the node's config screen, the action needs to be defined in the ```msg.action``` of the input message:
 
 ![Device](/images/onvif_device.png)
@@ -169,7 +183,7 @@ When no action has been specified in the node's config screen, the action needs 
 [{"id":"bacb880f.853a88","type":"inject","z":"26dbe156.c7049e","name":"Get device information","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":260,"y":1520,"wires":[["90cf9e45.fef83"]]},{"id":"90cf9e45.fef83","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getDeviceInformation","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1520,"wires":[["569d0223.dcc0cc"]]},{"id":"c17d3b0c.763f78","type":"inject","z":"26dbe156.c7049e","name":"Get services","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":230,"y":1640,"wires":[["b2189543.3cbc28"]]},{"id":"b2189543.3cbc28","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getServices","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1640,"wires":[["569d0223.dcc0cc"]]},{"id":"d710fda6.e8aae","type":"inject","z":"26dbe156.c7049e","name":"Get system datetime","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":250,"y":1600,"wires":[["cc3c9656.8496a8"]]},{"id":"cc3c9656.8496a8","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getSystemDateAndTime","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1600,"wires":[["569d0223.dcc0cc"]]},{"id":"a744dbdf.67e6c8","type":"inject","z":"26dbe156.c7049e","name":"Get capabilities","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":240,"y":1680,"wires":[["5d9e78c8.149b38"]]},{"id":"5d9e78c8.149b38","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getCapabilities","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1680,"wires":[["569d0223.dcc0cc"]]},{"id":"c4b35b2e.3088b8","type":"inject","z":"26dbe156.c7049e","name":"Get scopes","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":230,"y":1720,"wires":[["65b4227b.29ca5c"]]},{"id":"65b4227b.29ca5c","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getScopes","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1720,"wires":[["569d0223.dcc0cc"]]},{"id":"d86390ea.9497c","type":"inject","z":"26dbe156.c7049e","name":"System reboot","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":240,"y":1760,"wires":[["b977019e.b468"]]},{"id":"b977019e.b468","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"systemReboot","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1760,"wires":[["569d0223.dcc0cc"]]},{"id":"b42d91a3.9ce6","type":"inject","z":"26dbe156.c7049e","name":"Get service capabilities","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":260,"y":1800,"wires":[["54209451.26faec"]]},{"id":"54209451.26faec","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getServiceCapabilities","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1800,"wires":[["569d0223.dcc0cc"]]},{"id":"43651b47.8d7824","type":"inject","z":"26dbe156.c7049e","name":"Get hostname information","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":270,"y":1560,"wires":[["d49b6d87.e936d"]]},{"id":"d49b6d87.e936d","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getHostname","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1560,"wires":[["569d0223.dcc0cc"]]},{"id":"6227d5ec.51a9ec","type":"inject","z":"26dbe156.c7049e","name":"Reconnect to device","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":250,"y":1840,"wires":[["c24552ea.311e3"]]},{"id":"c24552ea.311e3","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"reconnect","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":500,"y":1840,"wires":[["569d0223.dcc0cc"]]},{"id":"569d0223.dcc0cc","type":"onvif-device","z":"26dbe156.c7049e","name":"","deviceConfig":"e6c78b2e.fe4dc8","action":"","x":730,"y":1520,"wires":[["7c39ee64.2d193"]]},{"id":"7c39ee64.2d193","type":"debug","z":"26dbe156.c7049e","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"true","x":890,"y":1520,"wires":[]},{"id":"e6c78b2e.fe4dc8","type":"onvif-config","z":"","xaddress":"192.168.1.200","name":"MyCamKitchen"}]
 ```
 
-## Event Node
+## Event Node (NOT FUNCTIONAL YET !!!)
 This node allows to listen to all the events registered by the device.  The node will start listening to events when ```msg.action=start``` arrives and stops listening when ```msg.action=stop``` arrives:
 
 ![Events flow](/images/onvif_events.png)
@@ -177,9 +191,14 @@ This node allows to listen to all the events registered by the device.  The node
 ```
 [{"id":"7ea5e0c3.4d741","type":"inject","z":"26dbe156.c7049e","name":"Start listening","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":910,"y":860,"wires":[["378b6778.87ee38"]]},{"id":"378b6778.87ee38","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"start","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":860,"wires":[["9199d036.ef115"]]},{"id":"e7a5c111.16471","type":"inject","z":"26dbe156.c7049e","name":"Stop listening","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":910,"y":900,"wires":[["1830bf3.8165041"]]},{"id":"1830bf3.8165041","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"start","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":900,"wires":[["9199d036.ef115"]]},{"id":"b0958785.83ca18","type":"debug","z":"26dbe156.c7049e","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"false","x":1580,"y":860,"wires":[]},{"id":"82df60a3.e2b02","type":"inject","z":"26dbe156.c7049e","name":"Get event properties","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":930,"y":940,"wires":[["cd2a67b4.251db8"]]},{"id":"cd2a67b4.251db8","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getEventProperties","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":940,"wires":[["9199d036.ef115"]]},{"id":"9b6039a9.8ed2a8","type":"inject","z":"26dbe156.c7049e","name":"Get event service capabilities","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":960,"y":980,"wires":[["fad5135e.3a95"]]},{"id":"fad5135e.3a95","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getEventServiceCapabilities","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":1220,"y":980,"wires":[["9199d036.ef115"]]},{"id":"9199d036.ef115","type":"onvif-events","z":"26dbe156.c7049e","name":"","deviceConfig":"e6c78b2e.fe4dc8","action":"","x":1410,"y":860,"wires":[["b0958785.83ca18"]]},{"id":"e6c78b2e.fe4dc8","type":"onvif-config","z":"","xaddress":"192.168.1.200","name":"MyCamKitchen"}]
 ```
+***TODO: Get event service capabilities results in "method not found" ***
+
+***TODO: Start listening aborts the entire flow with error: You should create pull-point subscription first! (see https://github.com/agsh/onvif/issues/76)***
 
 ## PTZ Node
 This node allows the OnVif device to be PTZ controlled (Pan/Tilt/Zoom), but also offers a home position and multiple preset positions.  Of course this is only possible when the camera hardware supports PTZ.
+
+***TODO: For cameras without zoom (i.e. only PT) like mine, the getStatus gives an error (so I cannot determine the current PTZ location.  See https://github.com/agsh/onvif/issues/103 for which I have to create a pull request.***
 
 ### Moving the camera
 An PTZ camera can be remotely controlled to change the direction (vertical and horizontal) and zoom (in and out):
@@ -233,11 +252,3 @@ A lot of information can be requested from the PTZ node:
 ```
 [{"id":"2d9d8551.c0018a","type":"inject","z":"26dbe156.c7049e","name":"Get nodes","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":1800,"y":120,"wires":[["207254a6.890ccc"]]},{"id":"207254a6.890ccc","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getNodes","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":2080,"y":120,"wires":[["eaa9238d.ffd3b"]]},{"id":"9aedef2e.69825","type":"inject","z":"26dbe156.c7049e","name":"Get configurations","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":1830,"y":160,"wires":[["be886408.707d68"]]},{"id":"be886408.707d68","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getConfigurations","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":2080,"y":160,"wires":[["eaa9238d.ffd3b"]]},{"id":"f6c561a5.4b2bd","type":"inject","z":"26dbe156.c7049e","name":"Get configuration options","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":1850,"y":200,"wires":[["7ab75a66.7a4044"]]},{"id":"7ab75a66.7a4044","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getConfigurationOptions","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":2080,"y":200,"wires":[["eaa9238d.ffd3b"]]},{"id":"9ba5ac30.13fde","type":"inject","z":"26dbe156.c7049e","name":"Get status","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":1800,"y":240,"wires":[["e2a06007.832d6"]]},{"id":"e2a06007.832d6","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getStatus","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":2080,"y":240,"wires":[["eaa9238d.ffd3b"]]},{"id":"c4f1111f.4570a","type":"debug","z":"26dbe156.c7049e","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","x":2490,"y":120,"wires":[]},{"id":"eaa9238d.ffd3b","type":"onvif-ptz","z":"26dbe156.c7049e","name":"","deviceConfig":"e6c78b2e.fe4dc8","profile":"1_def_profile3","action":"","panSpeed":0,"tiltSpeed":0,"zoomSpeed":0,"panPosition":0,"tiltPosition":0,"zoomPosition":0,"panTranslation":0,"tiltTranslation":0,"zoomTranslation":0,"time":1,"preset":"","presetName":"","stopPanTilt":true,"stopZoom":true,"configurationToken":"","x":2298,"y":120,"wires":[["c4f1111f.4570a"]]},{"id":"e6c78b2e.fe4dc8","type":"onvif-config","z":"","xaddress":"192.168.1.200","name":"MyCamKitchen"}]
 ```
-
-CAUTION: Some devices don't offer zooming functionality, which is why they have only PT control.  Currently it is not possible to get the status/configuration from those devices.  See this [issue](https://github.com/agsh/onvif/issues/103) for tracking the status of this problem.
-
-## TODOs
-+ Check why zoom in/out doesn't work on a Panasonic camera.
-+ Implement rtsp streaming.
-+ Implement entire API of [node-onvif](https://github.com/futomi/node-onvif).
-+ Solve authentication errors when flow is (re)deployed.
