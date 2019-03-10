@@ -127,6 +127,19 @@
                         break;
                 }                     
             });
+        },
+        oneditsave: function() {
+            // Reset all values when no action has been specified 
+            // (because then no fields will be visible to specify data)
+            if ($("#node-input-action").val() === "") {
+                $("#node-input-profileToken").val("");
+                $("#node-input-profileName").val("");
+                $("#node-input-videoEncoderConfigToken").val("");
+                $("#node-input-videoEncoderConfigName").val("");
+                $("#node-input-videoEncoderConfigEncoding").val("");
+                $("#node-input-protocol").val("");
+                $("#node-input-stream").val("");
+            }
         }
     });
 </script>
