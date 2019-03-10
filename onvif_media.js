@@ -78,7 +78,7 @@
                     console.log(response.statusCode + ' ' + response.statusMessage);
                 }
             }).on('error', function(err) {
-                console.log(err)
+                console.error(err.message)
             })
         }
 
