@@ -66,9 +66,9 @@ The Discovery node has following settings:
 + The ***timeout*** time is by default 5 seconds, which means that the node will wait 5 seconds for all devices to respond. In normal circumstances all responses will arrive within 3 seconds.  However when some devices are not detected, it might be useful to increase the timeout time.  That way slower devices will have more time to respond to the broadcast signal.
 
 + The checkbox ***'Separate output message for each device'*** allow to control the output messages:
-   + When enabled, a separate output message will be generated for each OnVif compliant device.  Notice that all messages will be send together, as soon as the timeout time has been reached.
-   + When disabled, a single output message will be generated (containing an array of all available OnVif devices).
-   
+   + When enabled, a separate output message will be generated for each OnVif compliant device.  As soon as an Onvif device has responded, an output message will be generated immediately.  However the node will continue waiting for other Onvif devices to respond, until the timeout time has been reached.
+   + When disabled, a single output message will be generated (containing an array of all available OnVif devices).  This message will only appear after the timeout time, to allow all Onvif devices to respond.
+
 For every discovered OnVif compliant device, following data will be generated in the output message:
 
 ![Broadcast debug](/images/onvif_discovery_debug.png)
@@ -82,7 +82,10 @@ During discovery the node status will be *'discovering'*.  But once the timeout 
 As long as the discovery process is active, no second discovery process can be started (via the same Discovery node).
 
 ## Config node
-The config node contains all information required to connect to an Onvif device.  When you don't know the IP address of your Onvif nodes, please see the Discovery node above.
+The config node contains all information required to connect to an Onvif device:
++ IP address: When you don't know the IP address of your Onvif nodes, please see the Discovery node above.
++ Username: Optional but highly advised to secure your camera by username/password credentials.
++ Password: Optional but highly advised to secure your camera by username/password credentials.
 
 ***TODO: Add a search box that starts a discovery, and from which users can select an IP address of an Onvif device.***
 
