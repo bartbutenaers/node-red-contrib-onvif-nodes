@@ -66,7 +66,7 @@ The Discovery node has following settings:
 + The ***timeout*** time is by default 5 seconds, which means that the node will wait 5 seconds for all devices to respond. In normal circumstances all responses will arrive within 3 seconds.  However when some devices are not detected, it might be useful to increase the timeout time.  That way slower devices will have more time to respond to the broadcast signal.
 
 + The checkbox ***'Separate output message for each device'*** allow to control the output messages:
-   + When enabled, a separate output message will be generated for each OnVif compliant device.  
+   + When enabled, a separate output message will be generated for each OnVif compliant device.  Notice that all messages will be send together, as soon as the timeout time has been reached.
    + When disabled, a single output message will be generated (containing an array of all available OnVif devices).
    
 For every discovered OnVif compliant device, following data will be generated in the output message:
