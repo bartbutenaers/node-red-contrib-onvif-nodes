@@ -19,9 +19,10 @@
 
     function OnVifDiscoveryNode(config) {
         RED.nodes.createNode(this, config);
-        this.separate = config.separate;
+        this.timeout     = parseInt(config.timeout) * 1000; // Seconds
+        this.separate    = config.separate;
         this.discovering = false;
-        this.counter = 0;
+        this.counter     = 0;
 
         var node = this;
         
