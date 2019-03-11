@@ -96,6 +96,9 @@
         
         // Without an xaddress, it is impossible to connect to an Onvif device
         if (!this.xaddress) {
+            // Make sure the Catch-node can catch the error
+            node.error( "Cannot connect to unconfigured Onvif device", {} );
+                
             this.cam = null;
             setOnvifStatus(node, "unconfigured");
             return;
@@ -114,6 +117,9 @@
         // Create a new camera instance, which will automatically connect to the device (to load configuration data)
         this.cam = new onvif.Cam(options, function(err) { 
             if (err) {
+                // Make sure the Catch-node can catch the error
+                node.error( err, {} );
+                
                 setOnvifStatus(node, "disconnected");
             }
             else {  
