@@ -17,7 +17,7 @@
         defaults: {
             name: {value:""},
             deviceConfig: {value:"", type: "onvif-config"},
-            profile: {value:"", required:true},
+            profileName: {value:""},
             action: {value:""},
             panSpeed: {value:0.0},
             tiltSpeed: {value:0.0},
@@ -48,16 +48,18 @@
                 
                 // Hide all rows concerning the action parameters, and show some of these again below
                 $(".actionParam-row").hide();
-                
+                            
                 // Depending on the selected action, some specific element(s) should be showed
                 switch (action) {
                     case "continuousMove":
+                        $("#profileName-div").show();
                         $("#panSpeed-div").show();
                         $("#tiltSpeed-div").show();
                         $("#zoomSpeed-div").show();
                         $("#time-div").show();
                         break;
                     case "absoluteMove":
+                        $("#profileName-div").show();
                         $("#panSpeed-div").show();
                         $("#tiltSpeed-div").show();
                         $("#zoomSpeed-div").show();
@@ -67,38 +69,102 @@
                         $("#time-div").show();
                         break;    
                     case "relativeMove":
+                        $("#profileName-div").show();
                         $("#panTranslation-div").show();
                         $("#tiltTranslation-div").show();
                         $("#zoomTranslation-div").show();
                         break;  
                     case "gotoPreset":
+                        $("#profileName-div").show();
                         $("#preset-div").show();                        
                         $("#panSpeed-div").show();
                         $("#tiltSpeed-div").show();
                         $("#zoomSpeed-div").show();
                         break; 
                     case "setPreset":
+                        $("#profileName-div").show();
                         $("#preset-div").show();   
                         $("#presetName-div").show();                        
                         break;                         
                     case "removePreset":
+                        $("#profileName-div").show();
                         $("#preset-div").show();                        
                         break; 
                     case "stop":
+                        $("#profileName-div").show();
                         $("#stopPanTilt-div").show(); 
                         $("#stopZoom-div").show();                        
                         break; 
                     case "getConfigurationOptions":
                         $("#configurationToken-div").show();    
                         break;
+                    case "gotoHomePosition":
+                        $("#profileName-div").show();
+                        break;
+                    case "setHomePosition":
+                        $("#profileName-div").show();
+                        break;
+                    case "getPresets":
+                        $("#profileName-div").show();
+                        break;
+                    case "getStatus":
+                        $("#profileName-div").show();
+                        break;
                 }                     
+            });
+            
+            try {
+                $("#node-input-profileName").autocomplete( "destroy" );
+            } 
+            catch(err) {
+            }
+            $("#node-input-profileName-search").click(function() {
+                $("#node-input-profileName-search").addClass('disabled');
+                
+                var configNodeId = $("#node-input-deviceConfig").val();
+                
+                if (!configNodeId) {
+                    // No config node has been specified, so no use to connect to the server ...
+                    return;
+                }
+                                
+                configNode = RED.nodes.node(configNodeId);
+             
+                // All client-side config data should be send to the server (since we don't know if it is dirty or not).
+                var configData = {};
+                configData.hostname = configNode.xaddress;
+                if (configNode.credentials) {
+                    configData.user = configNode.credentials.user;
+                    configData.password = configNode.credentials.password;
+                }
+                
+                $.getJSON("onvifdevice/profiles/" + configNodeId, configData, function(profiles) {
+                    $("#node-input-profileName-search").removeClass('disabled');
+                    $("#node-input-profileName").autocomplete({
+                        source:profiles,
+                        minLength:0,
+                        select: function(event, ui) {
+                            // Make sure the label is displayed in the text field (instead of the value)
+                            event.preventDefault();
+                            $("#node-input-profileName").val(ui.item.label);
+                        },
+                        focus: function(event, ui) {
+                            // Make sure the label is displayed when hovering (instead of the value)
+                            event.preventDefault();
+                            $("#node-input-profileName").val(ui.item.label);
+                        },
+                        close: function( event, ui ) {
+                            $("#node-input-profileName").autocomplete( "close" );
+                        }
+                    }).autocomplete("search","");
+                });
             });
         },
         oneditsave: function() {
             // Reset all values when no action has been specified 
             // (because then no fields will be visible to specify data)
             if ($("#node-input-action").val() === "") {
-                $("#node-input-profile").val("");
+                $("#node-input-profileName").val("");
                 $("#node-input-panSpeed").val(0.0);
                 $("#node-input-tiltSpeed").val(0.0);
                 $("#node-input-zoomSpeed").val(0.0);
@@ -127,10 +193,6 @@
     </div>
     <br>
     <div class="form-row">
-        <label for="node-input-profile"><i class="fa fa-hashtag"></i> Profile</label>
-        <input type="text" id="node-input-profile">
-    </div>
-    <div class="form-row">
         <label for="node-input-action"><i class="fa fa-wrench"></i> Action</label>
         <select id="node-input-action">
             <option value=""></option>
@@ -155,6 +217,11 @@
         </select>
     </div>
     <br>
+    <div class="form-row actionParam-row" id="profileName-div">
+        <label for="node-input-profileName"><i class="fa fa-random"></i> Profile</label>
+        <input type="text" id="node-input-profileName" style="width:66%;">
+        <a id="node-input-profileName-search" class="btn"><i id="node-config-lookup-serial-icon" class="fa fa-search"></i></a>
+    </div>
     <div class="form-row actionParam-row" id="panSpeed-div">
         <label for="node-input-panSpeed"><i class="fas fa-arrows-alt-h"></i> Pan speed</label>
         <input type="number" id="node-input-panSpeed" step=".1" min="-1.0" max="1.0">
