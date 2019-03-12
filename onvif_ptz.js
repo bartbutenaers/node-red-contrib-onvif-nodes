@@ -30,7 +30,7 @@
         this.tiltTranslation    = parseFloat(config.tiltTranslation);
         this.zoomTranslation    = parseFloat(config.zoomTranslation);
         this.time               = parseInt(config.time);
-        this.profile            = config.profile;
+        this.profileName        = config.profileName;
         this.action             = config.action;
         this.preset             = config.preset;
         this.presetName         = config.presetName;
@@ -57,6 +57,9 @@
 
         node.on("input", function(msg) {
             var newMsg = {};
+            
+            var profileToken = msg.profileToken;
+            var profileName = node.profileName || msg.profileName;
 
             var panSpeed           = node.panSpeed;
             var tiltSpeed          = node.tiltSpeed;
@@ -195,7 +198,13 @@
             // Make sure the values are between -1.0 and 1.0
             panSpeed  = Math.min(Math.max(panSpeed, -1.0), 1.0);
             tiltSpeed = Math.min(Math.max(tiltSpeed, -1.0), 1.0);
-            zoomSpeed = Math.min(Math.max(zoomSpeed, -1.0), 1.0);    
+            zoomSpeed = Math.min(Math.max(zoomSpeed, -1.0), 1.0);   
+
+            // To make things easier for a user, we will let the user specify profile names.
+            // The corresponding profile token (which is required in Onvif to work with profiles) will be searched here...
+            if (!profileToken && profileName) {
+                profileToken = node.deviceConfig.getProfileTokenByName(profileName);
+            }            
 
             newMsg.xaddr = this.deviceConfig.xaddress;
             newMsg.action = action;            
@@ -204,7 +213,7 @@
                 switch (action) { 
                     case "continuousMove":
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                             'x': panSpeed,
                             'y': tiltSpeed,
                             'zoom': zoomSpeed,
@@ -220,7 +229,7 @@
                     case "absoluteMove":
                         // TODO The 'position' value range is specified in the profile
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                             'x': panPosition,
                             'y': tiltPosition,
                             'zoom': zoomPosition,
@@ -239,7 +248,7 @@
                         break;
                     case "relativeMove":
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                             'x': panTranslation,
                             'y': tiltTranslation,
                             'zoom': zoomTranslation,
@@ -258,7 +267,7 @@
                         break;
                     case "gotoHomePosition":
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                             'speed': {
                                 'x': panSpeed,
                                 'y': tiltSpeed,
@@ -275,7 +284,7 @@
                         break;
                     case "setHomePosition":
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                         };
                         
                         // Set the CURRENT camera position as the home position
@@ -286,7 +295,7 @@
                         break;
                     case "getPresets":
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                         };
                         
                         node.deviceConfig.cam.getPresets(options, function(err, stream, xml) {
@@ -296,7 +305,7 @@
                         break;
                     case "setPreset":
                         var options = {
-                            'profileToken': node.profile
+                            'profileToken': profileToken
                         };
                         
                         // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
@@ -328,7 +337,7 @@
                         break;                    
                     case "removePreset":
                         var options = {
-                            'profileToken': node.profile
+                            'profileToken': profileToken
                         };
                         
                         // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
@@ -358,7 +367,7 @@
                         break;                                   
                     case "gotoPreset":
                         var options = {
-                            'profileToken': node.profile
+                            'profileToken': profileToken
                         };
                         
                         // We will not ask the user to specify the preset token in the input message, to avoid that the preset tokens will
@@ -426,7 +435,7 @@
                         // TODO error in onvif library due to missing zoom in Panasonic cam (see https://github.com/agsh/onvif/issues/103)
 
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                         };
                         
                         node.deviceConfig.cam.getStatus(options, function(err, stream, xml) {
@@ -436,7 +445,7 @@
                         break; 
                     case "stop":
                         var options = {
-                            'profileToken': node.profile,
+                            'profileToken': profileToken,
                             'panTilt': node.stopPanTilt,
                             'zoom': node.stopZoom
                         };
