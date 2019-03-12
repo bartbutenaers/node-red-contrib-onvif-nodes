@@ -135,7 +135,22 @@ This node offers functionality about all kind of media, like audio/video/images.
 The RTSP url can be used to setup a real-time-streaming-protocol with the camera.  In this Node-RED [discussion](https://discourse.nodered.org/t/how-to-display-cctv-camera-in-dashboard-rtsp/5860/47?u=bartbutenaers), you can find my flow to decode an RTSP stream in Node-RED to a continious stream of images (after you have installed FFmpeg).
 
 ### Media profiles
-Instead of specifying the required information (resolution ...) every time, that information will be specified in a profile.  Afterwards you only have to specify the profile name.
+Every Onvif device will contain a series of default media profiles.  Every profile contains following data:
++ A unique name.
++ A unique token which will only be used internally by these Onvif nodes (based on the name, the nodes will lookup the token automatically).
++ The configuration for all available media services (audio, video, ptz ...). 
+
+For example the *'getProfiles'* action (in the example flow below) will return all available media profiles in my Onvif device:
+
+![Get media profiles](/images/onvif_get_profiles.png)
+
+When having a look e.g. at the details of the video encoding configuration, you will see a JPEG of resultion 320x240:
+
+![Example profile](/images/onvif_example_profile.png)
+
+Such a profile names need to be specified for most media actions.  So instead of having to repeat the information over and over again, the Onvif device will use the information from the specified profile.  For example when a snapshot as JPEG with resolution 320x240 is needed, you only need to specify the profile name *'JPEG_320x240'* ...
+
+Following example flow shows how to view and manipulate profiles:
 	
 ![Video media flow](/images/onvif_media_profiles.png)
 
@@ -143,7 +158,9 @@ Instead of specifying the required information (resolution ...) every time, that
 [{"id":"3e1bb7ba.4aea98","type":"inject","z":"26dbe156.c7049e","name":"Get profiles","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":270,"y":2900,"wires":[["3ef210b5.e10dc"]]},{"id":"3ef210b5.e10dc","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getProfiles","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":520,"y":2900,"wires":[["c0548e0f.c2176"]]},{"id":"78adef9.6574c1","type":"inject","z":"26dbe156.c7049e","name":"Create profile","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":270,"y":2940,"wires":[["51f16c10.71d124"]]},{"id":"51f16c10.71d124","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"createProfile","tot":"str"},{"t":"set","p":"profileToken","pt":"msg","to":"testToken","tot":"str"},{"t":"set","p":"profileName","pt":"msg","to":"myProfile","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":520,"y":2940,"wires":[["c0548e0f.c2176"]]},{"id":"f41a1d44.ceef1","type":"inject","z":"26dbe156.c7049e","name":"Delete profile","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":270,"y":2980,"wires":[["2888251b.9d850a"]]},{"id":"2888251b.9d850a","type":"change","z":"26dbe156.c7049e","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"deleteProfile","tot":"str"},{"t":"set","p":"profileName","pt":"msg","to":"myProfile","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":520,"y":2980,"wires":[["c0548e0f.c2176"]]},{"id":"6782c13e.298af","type":"debug","z":"26dbe156.c7049e","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","x":970,"y":2900,"wires":[]},{"id":"c0548e0f.c2176","type":"onvif-media","z":"26dbe156.c7049e","name":"","deviceConfig":"e6c78b2e.fe4dc8","profileToken":"","profileName":"","videoEncoderConfigToken":"","videoEncoderConfigName":"","videoEncoderConfigEncoding":"","action":"","protocol":"HTTP","stream":"RTP-Unicast","x":771,"y":2900,"wires":[["6782c13e.298af"]]},{"id":"e6c78b2e.fe4dc8","type":"onvif-config","z":"","xaddress":"192.168.1.200","name":"MyCamKitchen"}]
 ```
 
-### Snasphot images
+***TODO: Not possible yet to create an entire new profile, incl. configurations.***
+
+### Snapshot images
 
 The action ***getSnapshotUri*** returns the URL that can be used for retrieving a snapshot image from the camera.  That URL could be passed to a HttpRequest node to fetch the snapshot image:
 
