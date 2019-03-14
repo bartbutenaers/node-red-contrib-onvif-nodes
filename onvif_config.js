@@ -27,10 +27,18 @@
     function OnVifConfigNode(config) {
         RED.nodes.createNode(this, config);
         this.xaddress = config.xaddress;
-        this.name     = config.name; 
+        this.port     = parseInt(config.port || 80);
+        this.name     = config.name;
         // Remark: user name and password are stored in this.credentials
         
         var node = this;
+        
+        // All Onvif nodes can add a listener to track the 'onvif_status' events.
+        // However by default only 10 listeners are allowed, which results in a warning when more Onvif nodes use this config node:
+        // MaxListenersExceededWarning: Possible EventEmitter memory leak detected
+        // To avoid that, we will allow an infinite number of listeners.
+        // Caution: when you have suspicion that the listeners are leaking, put the next line in comment !!!
+        node.setMaxListeners(0);
         
         this.getProfiles = function(clientConfig, response) {
             var profileNames = [];
@@ -107,7 +115,8 @@
         setOnvifStatus(node, "initializing");
         
         var options = {};
-        options.hostname= this.xaddress;
+        options.hostname = this.xaddress;
+        options.port = this.port;
         
         if (this.credentials && this.credentials.user) {
             options.username = this.credentials.user;
