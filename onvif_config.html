@@ -16,6 +16,7 @@
         color: '#ff758d',
         defaults: {
             xaddress: {value:"", required:true},
+            port: {value:80, required:true},
             name: {value:""}
         },   
         credentials: {
@@ -38,6 +39,10 @@
         <input type="text" id="node-config-input-xaddress">
     </div>
     <div class="form-row">
+        <label for="node-config-input-port"><i class="fa fa-random"></i> Port</label>
+        <input type="text" id="node-config-input-port">
+    </div>
+    <div class="form-row">
         <label for="node-config-input-user"><i class="fa fa-user"></i> User</label>
         <input type="text" id="node-config-input-user">
     </div>
@@ -54,7 +59,9 @@
 
 <script type="text/x-red" data-help-name="onvif-config">
     <p><strong>IP address:</strong><br/>
-    The IP address of the required endpoint on the target IP device.</p>
+    The IP address of the required endpoint on the target IP device.  When you don't know the IP address of your Onvif device, use the Onvif-Discovery: the <code>XAddrs</code> field contains a list of all the IP addresses.</p>
+    <p><strong>Port:</strong><br/>
+    The IP address of the required endpoint on the target IP device.  Those port numbers can also be found via the Discovery node, in the same <code>XAddrs</code> field.</p>
     <p><strong>User name:</strong><br/>
     An optional user name for basic authentication on the target IP device.</p>
     <p><strong>Password:</strong><br/>
