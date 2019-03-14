@@ -73,7 +73,7 @@ For every discovered OnVif compliant device, following data will be generated in
 
 ![Broadcast debug](/images/onvif_discovery_debug.png)
 
-The ***'XAddrs'*** field contains the IP address, which will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  
+The ***'XAddrs'*** field contains the IP address (and the port number), which will be used to configure the Onvif device in Node-Red!  *Indeed you will have to create an Onvif device config node for every Onvif device that you have discovered.*  
 
 During discovery the node status will be *'discovering'*.  But once the timeout has passed, the discovery process is *'completed'* and the number of discovered devices will be displayed:
 
@@ -84,6 +84,7 @@ As long as the discovery process is active, no second discovery process can be s
 ## Config node
 The config node contains all information required to connect to an Onvif device:
 + IP address: When you don't know the IP address of your Onvif nodes, please see the Discovery node above.
++ Port: When you don't know the IP address of your Onvif nodes, please see the Discovery node above.  If no port number visible, use port ```80``` by default.
 + Username: Optional but highly advised to secure your camera by username/password credentials.
 + Password: Optional but highly advised to secure your camera by username/password credentials.
 
