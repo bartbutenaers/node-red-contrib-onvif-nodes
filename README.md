@@ -163,6 +163,11 @@ Following example flow shows how to view and manipulate profiles:
 
 ### Snapshot images
 
+Remark: to be able to run the example flow, some manual interventions are required:
++ The node-red-contrib-image-output should be installed, to show the snapshot image in the flow editor.
++ Select an available profile from your Onvif device via the 'search' icon!  Indeed the resolution of the snapshot image depends on the **profile** specified in the node's config screen, e.g. there might be a profile that offers JPEGs with resolution 640x480. 
++ In the first flow the username and password (of the Onvif config node) should be repeated in the httprequest node.
+
 The action ***getSnapshotUri*** returns the URL that can be used for retrieving a snapshot image from the camera.  That URL could be passed to a HttpRequest node to fetch the snapshot image:
 
 ![Media snapshot](/images/onvif_media_snapshot_http.png)
@@ -171,15 +176,13 @@ The action ***getSnapshotUri*** returns the URL that can be used for retrieving 
 [{"id":"ed82ed59.593e6","type":"http request","z":"bb2edfc9.1718a","name":"","method":"GET","ret":"bin","url":"","tls":"","x":1170,"y":2820,"wires":[["50246c7e.8dabd4"]]},{"id":"50246c7e.8dabd4","type":"image","z":"bb2edfc9.1718a","name":"","width":200,"x":1350,"y":2820,"wires":[]},{"id":"f8779ce3.3f67","type":"onvifmedia","z":"bb2edfc9.1718a","name":"","deviceConfig":"","profileToken":"","profileName":"","videoEncoderConfigToken":"","videoEncoderConfigName":"","videoEncoderConfigEncoding":"","action":"getSnapshotUri","protocol":"","stream":"","x":810,"y":2820,"wires":[["a734ba31.f75d78"]]},{"id":"6ac5b6bb.1d3bd8","type":"inject","z":"bb2edfc9.1718a","name":"Get snapshot","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":630,"y":2820,"wires":[["f8779ce3.3f67"]]},{"id":"a734ba31.f75d78","type":"change","z":"bb2edfc9.1718a","name":"","rules":[{"t":"set","p":"url","pt":"msg","to":"payload.uri","tot":"msg"}],"action":"","property":"","from":"","to":"","reg":false,"x":990,"y":2820,"wires":[["ed82ed59.593e6"]]}]
 ```
 
-However the flow will become complex and the device's credentials (username/password) should be again specified in the httprequest node.  Therefore action ***getSnapshot*** has been added to execute all these steps in a single operation:
+However the flow will become complex and the device's **credentials** (username/password) should be repeated in the httprequest node.  Therefore action ***getSnapshot*** has been added to execute all these steps in a single operation:
 
 ![Media snapshot short](/images/onvif_media_snapshot_short.png)
 
 ```
-[{"id":"5756138c.5e3fac","type":"inject","z":"bb2edfc9.1718a","name":"Get snapshot image","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":890,"y":2560,"wires":[["7346f703.240908"]]},{"id":"7346f703.240908","type":"onvifmedia","z":"bb2edfc9.1718a","name":"","deviceConfig":"","profileToken":"","profileName":"","videoEncoderConfigToken":"","videoEncoderConfigName":"","videoEncoderConfigEncoding":"","action":"getSnapshot","protocol":"","stream":"","x":1090,"y":2560,"wires":[["fb09de66.f5ec2"]]},{"id":"fb09de66.f5ec2","type":"image","z":"bb2edfc9.1718a","name":"","width":200,"x":1270,"y":2560,"wires":[]}]
+[{"id":"907621a9.98d79","type":"inject","z":"26dbe156.c7049e","name":"Get snapshot image","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":1430,"y":100,"wires":[["ddb99a63.98e938"]]},{"id":"7074982e.851308","type":"image","z":"26dbe156.c7049e","name":"","width":200,"x":1820,"y":100,"wires":[]},{"id":"ddb99a63.98e938","type":"onvif-media","z":"26dbe156.c7049e","name":"","deviceConfig":"e6c78b2e.fe4dc8","profileToken":"","profileName":"JPEG_320x240","videoEncoderConfigToken":"","videoEncoderConfigName":"","videoEncoderConfigEncoding":"","action":"getSnapshot","protocol":"HTTP","stream":"RTP-Unicast","x":1630,"y":100,"wires":[["7074982e.851308"]]},{"id":"e6c78b2e.fe4dc8","type":"onvif-config","z":"","xaddress":"192.168.1.200","port":"80","name":"MyCamKitchen"}]
 ```
-
-The resolution of the image depends on the **profile** specified in the node's config screen, e.g. there might be a profile that offers JPEGs with resolution 640x480. 
 
 ## Device Node
 When this node is triggered (by means of an input message), it will generate an output message `msg.payload` containing information about that device:
