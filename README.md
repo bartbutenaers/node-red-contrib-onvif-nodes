@@ -14,7 +14,7 @@ Node Red nodes for communicating with OnVif compliant IP devices
 ## Install
 Run the following npm command in your Node-RED user directory (typically ~/.node-red):
 ```
-npm install node-red-contrib-onvif-nodes
+npm install node-red-contrib-onvif-nodes@0.0.1-beta.6
 ```
 
 ## Onvif basics
