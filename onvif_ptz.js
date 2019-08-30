@@ -217,7 +217,7 @@
                             'x': panSpeed,
                             'y': tiltSpeed,
                             'zoom': zoomSpeed,
-                            'timeout': node.time 
+                            'timeout': node.timeout
                         };
 
                         // Move the camera with the specified speed(s) and during the specified time
