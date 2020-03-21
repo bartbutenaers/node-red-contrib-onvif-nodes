@@ -53,6 +53,8 @@
             
             // Show the current Onvif config node status already
             utils.setNodeStatus(node, 'PTZ', node.deviceConfig.onvifStatus);
+            
+            node.deviceConfig.initialize();
         }
 
         node.on("input", function(msg) {
