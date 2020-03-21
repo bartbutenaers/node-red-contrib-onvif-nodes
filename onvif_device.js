@@ -37,26 +37,31 @@
             
             // Show the current Onvif config node status already
             utils.setNodeStatus(node, 'device', node.deviceConfig.onvifStatus);
+            
+            node.deviceConfig.initialize();
         }
 
         node.on("input", function(msg) {  
             var newMsg = {};
-            
-            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
-                //console.warn('Ignoring input message since the device connection is not complete');
-                return;
-            }
-
-            if (!node.deviceConfig.cam.capabilities['device']) {
-                //console.warn('Ignoring input message since the device does not support the device service');
-                return;
-            }
             
             var action = node.action || msg.action;
             
             if (!action) {
                 console.warn('When no action specified in the node, it should be specified in the msg.action');
                 return;
+            }
+            
+            // Don't perform these checks when e.g. the device is currently disconnected (because then e.g. no capabilities are loaded yet)
+            if (action !== "reconnect") {
+                if (!node.deviceConfig || node.deviceConfig.onvifStatus !== "connected") {
+                    //console.warn('Ignoring input message since the device connection is not complete');
+                    return;
+                }
+
+                if (!node.deviceConfig.cam.capabilities['device']) {
+                    //console.warn('Ignoring input message since the device does not support the device service');
+                    return;
+                }
             }
             
             newMsg.xaddr = this.deviceConfig.xaddress;
@@ -106,7 +111,7 @@
                         break;      
                     case "reconnect":
                         node.deviceConfig.cam.connect(function(err) {
-                            utils.handleResult(node, err, date, xml, null);
+                            utils.handleResult(node, err, "", null, newMsg);
                         });
                         break
                     default:
