@@ -224,7 +224,9 @@ CAUTION: You need to enable those events once **manually** (via the web interfac
 
 ![Hikvision web interface](https://user-images.githubusercontent.com/14224149/77230188-b6883b00-6b92-11ea-8ac4-cbcf8d1c2c42.png)
 
-The node will start listening to events when ```msg.action=start``` arrives and stops listening when ```msg.action=stop``` arrives:
+The node will start listening to events when ```msg.action=start``` arrives and stops listening when ```msg.action=stop``` arrives.  When the node is listening, every event (pushed by the Onvif device toward the Node-RED flow) will be converted to an output message:
+
+![Event pushing](https://user-images.githubusercontent.com/14224149/77230650-00beeb80-6b96-11ea-925c-8ba27a59d6fa.png)
 
 ![Event flow](https://user-images.githubusercontent.com/14224149/77230064-ec78ef80-6b91-11ea-97d8-7c267ac863ff.png)
 
@@ -235,7 +237,9 @@ The above flow will display the camera's CPU usage in the Node-RED dashboard:
 
 ![CPU usage](https://user-images.githubusercontent.com/14224149/77230208-ea636080-6b92-11ea-9a3c-f7e753023b24.png)
 
-Remark: As soon as the node is listening for events, the node status will change from *"connected"* to *"listening"*.
+Remarks: 
++ As soon as the node is listening for events, the node status will change from *"connected"* to *"listening"*.
++ Onvif devices can support 3 types of event transport mechanisms, but currently this node only supports *pull-point* events.  In fact this is not a real push mechanism, which uses polling behind the scenes ...
 
 ## PTZ Node
 This node allows the OnVif device to be PTZ controlled (Pan/Tilt/Zoom), but also offers a home position and multiple preset positions.  Of course this is only possible when the camera hardware supports PTZ.
