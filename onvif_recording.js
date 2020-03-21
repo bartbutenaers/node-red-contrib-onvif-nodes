@@ -35,6 +35,8 @@
             
             // Show the current Onvif config node status already
             utils.setNodeStatus(node, 'recording', node.deviceConfig.onvifStatus);
+            
+            node.deviceConfig.initialize();
         }
 
         node.on("input", function(msg) {  
