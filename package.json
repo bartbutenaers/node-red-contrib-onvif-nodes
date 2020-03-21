@@ -1,9 +1,9 @@
 {
     "name"         : "node-red-contrib-onvif-nodes",
-    "version"      : "0.0.1-beta.6",
+    "version"      : "0.0.1-beta.7",
     "description"  : "Node Red nodes for communicating with OnVif compliant IP devices",
     "dependencies": {
-       "onvif": "0.6.0"
+       "onvif": "0.6.2"
     },
     "author": {
         "name": "Bart Butenaers"
