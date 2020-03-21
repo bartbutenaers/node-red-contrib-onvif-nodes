@@ -101,40 +101,48 @@
             // No token found with the specified name
             return null;
         }
-        
-        // Without an xaddress, it is impossible to connect to an Onvif device
-        if (!this.xaddress) {
-            // Make sure the Catch-node can catch the error
-            node.error( "Cannot connect to unconfigured Onvif device", {} );
-                
-            this.cam = null;
-            setOnvifStatus(node, "unconfigured");
-            return;
-        }
-        
-        setOnvifStatus(node, "initializing");
-        
-        var options = {};
-        options.hostname = this.xaddress;
-        options.port = this.port;
-        
-        if (this.credentials && this.credentials.user) {
-            options.username = this.credentials.user;
-            options.password = this.credentials.password;
-        }
-
-        // Create a new camera instance, which will automatically connect to the device (to load configuration data)
-        this.cam = new onvif.Cam(options, function(err) { 
-            if (err) {
+       
+        // This should be called by all nodes that use this config node
+        this.initialize = function() {
+            // This config node can only be initialized oncellchange
+            if (this.cam) {
+                return;
+            }
+           
+            // Without an xaddress, it is impossible to connect to an Onvif device
+            if (!this.xaddress) {
                 // Make sure the Catch-node can catch the error
-                node.error( err, {} );
-                
-                setOnvifStatus(node, "disconnected");
+                node.error( "Cannot connect to unconfigured Onvif device", {} );
+                    
+                this.cam = null;
+                setOnvifStatus(node, "unconfigured");
+                return;
             }
-            else {  
-                setOnvifStatus(node, "connected"); 
+            
+            setOnvifStatus(node, "initializing");
+            
+            var options = {};
+            options.hostname = this.xaddress;
+            options.port = this.port;
+            
+            if (this.credentials && this.credentials.user) {
+                options.username = this.credentials.user;
+                options.password = this.credentials.password;
             }
-        });
+
+            // Create a new camera instance, which will automatically connect to the device (to load configuration data)
+            this.cam = new onvif.Cam(options, function(err) { 
+                if (err) {
+                    // Make sure the Catch-node can catch the error
+                    node.error( err, {} );
+                    
+                    setOnvifStatus(node, "disconnected");
+                }
+                else {  
+                    setOnvifStatus(node, "connected"); 
+                }
+            });
+        }
         
         node.on('close', function(){
 			setOnvifStatus(node, "");
