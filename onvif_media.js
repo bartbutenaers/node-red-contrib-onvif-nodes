@@ -45,6 +45,8 @@
             
             // Show the current Onvif config node status already
             utils.setNodeStatus(node, 'media', node.deviceConfig.onvifStatus);
+            
+            node.deviceConfig.initialize();
         }
         
         function getSnapshot(uri, newMsg) {
