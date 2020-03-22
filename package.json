@@ -3,7 +3,8 @@
     "version"      : "0.0.1-beta.7",
     "description"  : "Node Red nodes for communicating with OnVif compliant IP devices",
     "dependencies": {
-       "onvif": "git://github.com/agsh/onvif.git"
+       "onvif": "git://github.com/agsh/onvif.git",
+       "request": ">= 2.88.2"
     },
     "author": {
         "name": "Bart Butenaers"
