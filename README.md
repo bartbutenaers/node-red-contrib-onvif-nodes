@@ -247,13 +247,15 @@ This node allows to listen to all the events pushed by the device.  Depending on
 + CPU percentage
 + ...
 
+The more embedded electronics your camera contains (e.g. PIR sensor, microphone, external I/O input, ...), the more events might be available:
+
+![Camera events](https://user-images.githubusercontent.com/14224149/77259583-b4050e80-6c82-11ea-85d6-e8fb0a23c836.png)
+
 CAUTION: You need to enable those events once **manually** (via the web interface of your camera), because that is not part of the Onvif protocol!  For example the web interface of my Hikvision camera:
 
 ![Hikvision web interface](https://user-images.githubusercontent.com/14224149/77230188-b6883b00-6b92-11ea-8ac4-cbcf8d1c2c42.png)
 
 The node will start listening to events when ```msg.action=start``` arrives and stops listening when ```msg.action=stop``` arrives.  When the node is listening, every event (pushed by the Onvif device toward the Node-RED flow) will be converted to an output message:
-
-![Event pushing](https://user-images.githubusercontent.com/14224149/77230650-00beeb80-6b96-11ea-925c-8ba27a59d6fa.png)
 
 ![Event flow](https://user-images.githubusercontent.com/14224149/77230064-ec78ef80-6b91-11ea-97d8-7c267ac863ff.png)
 
