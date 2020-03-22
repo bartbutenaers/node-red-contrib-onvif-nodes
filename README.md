@@ -108,6 +108,33 @@ Since all Onvif nodes (of the same Onvif device) share the same config node, tha
 
 CAUTION: the IP addres of the Onvif device should not be changed by your DHCP server (e.g. inside your router), otherwise the Onvif device won't be accessible anymore afterwards.
 
+## Imaging node
+This node offers functionality to configure imaging specific properties.
+
+The following example flow shows how to read and set those properties:
+
+![imaging get and set](https://user-images.githubusercontent.com/14224149/77259002-a0f03f80-6c7e-11ea-8b72-7fbc2f155b4d.png)
+```
+[{"id":"7af75a72.95fca4","type":"onvif-imaging","z":"b3db206e.b7139","name":"","deviceConfig":"c6b46a46.8067f8","profile":"","action":"","x":760,"y":1600,"wires":[["57608e7d.d0012"]]},{"id":"3f04f383.92106c","type":"inject","z":"b3db206e.b7139","name":"Get imaging settings","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":310,"y":1600,"wires":[["58099d05.b3bd54"]]},{"id":"57608e7d.d0012","type":"debug","z":"b3db206e.b7139","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"false","x":950,"y":1600,"wires":[]},{"id":"58099d05.b3bd54","type":"change","z":"b3db206e.b7139","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"getImagingSettings","tot":"str"}],"action":"","property":"","from":"","to":"","reg":false,"x":540,"y":1600,"wires":[["7af75a72.95fca4"]]},{"id":"802207fe.5bec58","type":"inject","z":"b3db206e.b7139","name":"Set imaging settings","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":310,"y":1660,"wires":[["7692be04.f17cc"]]},{"id":"7692be04.f17cc","type":"change","z":"b3db206e.b7139","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"setImagingSettings","tot":"str"},{"t":"set","p":"brightness","pt":"msg","to":"60","tot":"num"},{"t":"set","p":"colorSaturation","pt":"msg","to":"60","tot":"num"},{"t":"set","p":"contrast","pt":"msg","to":"60","tot":"num"},{"t":"set","p":"sharpness","pt":"msg","to":"60","tot":"num"}],"action":"","property":"","from":"","to":"","reg":false,"x":540,"y":1660,"wires":[["7af75a72.95fca4"]]},{"id":"c6b46a46.8067f8","type":"onvif-config","z":"","xaddress":"192.168.1.174","port":"80","name":"Hikvision"}]
+```
+
++ The action ***getImagingSettings*** gets the current imaging setting values:
+
+   ![current imaging settings](https://user-images.githubusercontent.com/14224149/77259082-50c5ad00-6c7f-11ea-8805-a9f428f89429.png)
+   
++ The action ***getImagingSettings*** allows to set (one or more) new imaging setting values, via
+   + ```msg.brightness```
+   + ```msg.colorSaturation```
+   + ```msg.sharpness```
+   + ```msg.contrast```
+   
+Yet another flow to demonstrate how to update those values via user gestures (e.g. inject buttons in the flow editor):
+
+![set imaging settings](https://user-images.githubusercontent.com/14224149/77259182-18729e80-6c80-11ea-8d6b-f912c1330156.png)
+```
+[{"id":"1517f507.2f887b","type":"inject","z":"b3db206e.b7139","name":"Brightness up","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":290,"y":1760,"wires":[["d3662621.dc4228"]]},{"id":"66f4ba6d.1e5d64","type":"inject","z":"b3db206e.b7139","name":"Brightness down","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":300,"y":1800,"wires":[["23a1fdf0.ed8632"]]},{"id":"d3662621.dc4228","type":"function","z":"b3db206e.b7139","name":"Brightness + 5","func":"// Start default on a brightness value of 50\nvar brightness = flow.get(\"brightness\") || 50;\n\nbrightness += 5;\n\nflow.set(\"brightness\", brightness);\n\nmsg.action     = \"setImagingSettings\";\nmsg.brightness = brightness;\n\nreturn msg;","outputs":1,"noerr":0,"x":540,"y":1760,"wires":[["20bd08d5.3e1068"]]},{"id":"23a1fdf0.ed8632","type":"function","z":"b3db206e.b7139","name":"Brightness - 5","func":"// Start default on a brightness value of 50\nvar brightness = flow.get(\"brightness\") || 50;\n\nbrightness -= 5;\n\nflow.set(\"brightness\", brightness);\n\nmsg.action = \"setImagingSettings\";\nmsg.brightness = brightness;\n\nreturn msg;","outputs":1,"noerr":0,"x":540,"y":1800,"wires":[["20bd08d5.3e1068"]]},{"id":"2792ce4a.dc8d92","type":"inject","z":"b3db206e.b7139","name":"Brightness minimum","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":310,"y":1840,"wires":[["c31d8781.1c3c38"]]},{"id":"fa76b70c.16ff68","type":"inject","z":"b3db206e.b7139","name":"Brightness maximum","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":320,"y":1880,"wires":[["2e3afa6a.088556"]]},{"id":"c31d8781.1c3c38","type":"change","z":"b3db206e.b7139","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"setImagingSettings","tot":"str"},{"t":"set","p":"brightness","pt":"msg","to":"1","tot":"num"}],"action":"","property":"","from":"","to":"","reg":false,"x":540,"y":1840,"wires":[["20bd08d5.3e1068"]]},{"id":"2e3afa6a.088556","type":"change","z":"b3db206e.b7139","name":"","rules":[{"t":"set","p":"action","pt":"msg","to":"setImagingSettings","tot":"str"},{"t":"set","p":"brightness","pt":"msg","to":"100","tot":"num"}],"action":"","property":"","from":"","to":"","reg":false,"x":540,"y":1880,"wires":[["20bd08d5.3e1068"]]},{"id":"20bd08d5.3e1068","type":"onvif-imaging","z":"b3db206e.b7139","name":"","deviceConfig":"c6b46a46.8067f8","profile":"","action":"","x":760,"y":1760,"wires":[["417ef964.918e88"]]},{"id":"417ef964.918e88","type":"debug","z":"b3db206e.b7139","name":"","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"false","x":950,"y":1760,"wires":[]},{"id":"c6b46a46.8067f8","type":"onvif-config","z":"","xaddress":"192.168.1.174","port":"80","name":"Hikvision"}]
+```
+
 ## Media node
 This node offers functionality about all kind of media, like audio/video/images.
 
