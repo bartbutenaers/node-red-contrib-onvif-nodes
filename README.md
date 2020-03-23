@@ -266,6 +266,19 @@ The above flow will display the camera's CPU usage in the Node-RED dashboard:
 
 ![CPU usage](https://user-images.githubusercontent.com/14224149/77230208-ea636080-6b92-11ea-9a3c-f7e753023b24.png)
 
+The following action values can be passed:
++ ***start***: Start listening for events pushed by the Onvif device towards the Node-RED flow.
++ ***stop***: Stop listening for events pushed by the Onvif device towards the Node-RED flow.
++ **getEventServiceCapabilities***:  to determine if your camera supports pull point listeners.
+
+   ![Event service capabilities](https://user-images.githubusercontent.com/14224149/77260980-6ccf4b80-6c8b-11ea-857b-d4fd6171e883.png)
+   
+   The WSPullPointSupport should be ```true```, otherwise your camera doesn't support pull-point events!
+
++ ***getEventProperties***: to determine which events your camera can push.  For example for my Hikvision camera:
+
+   ![image](https://user-images.githubusercontent.com/14224149/77261021-b91a8b80-6c8b-11ea-964f-a52c39c17f63.png)
+
 Remarks: 
 + As soon as the node is listening for events, the node status will change from *"connected"* to *"listening"*.
 + Onvif devices can support 3 types of event transport mechanisms, but currently this node only supports *pull-point* events.  In fact this is not a real push mechanism, which uses polling behind the scenes ...
