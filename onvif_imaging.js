@@ -74,47 +74,57 @@
                     case 'setImagingSettings':
                         var options = {};
                         
+                        if (msg.payload) {
+                            if (msg.payload.backlightCompensation) {
+                                options.backlightCompensation = msg.payload.backlightCompensation;
+                            }
+                            
+                            if (msg.payload.brightness) {
+                                options.brightness = msg.payload.brightness;
+                            }
+                            
+                            if (msg.payload.colorSaturation) {
+                                options.colorSaturation = msg.payload.colorSaturation;
+                            }
+                            
+                            if (msg.payload.contrast) {
+                                options.contrast = msg.payload.contrast;
+                            }
+                            
+                            if (msg.payload.exposure) {
+                                options.exposure = msg.payload.exposure;
+                            }
+                         
+                            if (msg.payload.focus) {
+                                options.focus = msg.payload.focus;
+                            }
+                            
+                            if (msg.payload.irCutFilter) {
+                                options.irCutFilter = msg.payload.irCutFilter;
+                            }
+                            
+                            if (msg.payload.sharpness) {
+                                options.sharpness = msg.payload.sharpness;
+                            }
+                            
+                            if (msg.payload.wideDynamicRange) {
+                                options.wideDynamicRange = msg.payload.wideDynamicRange;
+                            }
+                            
+                            if (msg.payload.whiteBalance) {
+                                options.whiteBalances = msg.payload.whiteBalance;
+                            }
+                         
+                            if (msg.payload.focus) {
+                                options.focus = msg.payload.focus;
+                            }
+
+                            if (msg.payload.extension) {
+                                options.extension = msg.payload.extension;
+                            }   
+                        }                            
+                        
                         // TODO we should be able to specify (in the options) the video source token, because by default the active video source will be updated.
-                        
-                        // Check whether a 'brightness' value is specified in the input message
-                        if (msg.hasOwnProperty('brightness') /*TODO CHECK VIA PROFILE RANGE  || msg.brightness < -1.0 || msg.brightness > 1.0*/) {
-                            if (isNaN(msg.brightness)) {
-                                console.error('The msg.brightness value should be a number between ?? and ??'); // TODO find boundaries in profile
-                            }
-                            else {
-                                options.brightness = msg.brightness;
-                            }
-                        }
-                        
-                        // Check whether a 'colorSaturation' value is specified in the input message
-                        if (msg.hasOwnProperty('colorSaturation') /*TODO CHECK VIA PROFILE RANGE  || msg.colorSaturation < -1.0 || msg.colorSaturation > 1.0*/) {
-                            if (isNaN(msg.colorSaturation)) {
-                                console.error('The msg.colorSaturation value should be a number between ?? and ??'); // TODO find boundaries in profile
-                            }
-                            else {
-                                options.colorSaturation = msg.colorSaturation;
-                            }
-                        }
-                        
-                        // Check whether a 'contrast' value is specified in the input message
-                        if (msg.hasOwnProperty('contrast') /*TODO CHECK VIA PROFILE RANGE  || msg.contrast < -1.0 || msg.contrast > 1.0*/) {
-                            if (isNaN(msg.contrast)) {
-                                console.error('The msg.contrast value should be a number between ?? and ??'); // TODO find boundaries in profile
-                            }
-                            else {
-                                options.contrast = msg.contrast;
-                            }
-                        }
-                        
-                        // Check whether a 'sharpness' value is specified in the input message
-                        if (msg.hasOwnProperty('sharpness') /*TODO CHECK VIA PROFILE RANGE  || msg.sharpness < -1.0 || msg.sharpness > 1.0*/) {
-                            if (isNaN(msg.sharpness)) {
-                                console.error('The msg.sharpness value should be a number between ?? and ??'); // TODO find boundaries in profile
-                            }
-                            else {
-                                options.sharpness = msg.sharpness;
-                            }
-                        }
                         
                         if (Object.keys(options).length === 0) {
                             console.error('No image settings have been specified.'); 
