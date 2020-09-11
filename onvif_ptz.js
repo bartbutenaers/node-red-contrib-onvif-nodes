@@ -153,7 +153,7 @@
                     console.error('The msg.tilt_position value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
-                    panPosition = msg.tilt_position;
+                    tiltPosition = msg.tilt_position;
                 }
             }
             
@@ -163,7 +163,7 @@
                     console.error('The msg.zoom_position value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
-                    panPosition = msg.zoom_position;
+                    zoomPosition = msg.zoom_position;
                 }
             }
             
@@ -173,7 +173,7 @@
                     console.error('The msg.pan_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
-                    panPosition = msg.pan_translation;
+                    panTranslation = msg.pan_translation;
                 }
             }
             
@@ -183,7 +183,7 @@
                     console.error('The msg.tilt_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
-                    panPosition = msg.tilt_translation;
+                    tiltTranslation = msg.tilt_translation;
                 }
             }
             
@@ -193,7 +193,7 @@
                     console.error('The msg.zoom_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
-                    panPosition = msg.zoom_translation;
+                    zoomTranslation = msg.zoom_translation;
                 }
             }
             
@@ -243,7 +243,7 @@
                         };
 
                         // Move the camera with the specified speed(s) and during the specified time
-                        node.deviceConfig.cam.continuousMove(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.absoluteMove(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
@@ -262,7 +262,7 @@
                         };
 
                         // Move the camera with the specified speed(s) and during the specified time
-                        node.deviceConfig.cam.continuousMove(options, function(err, stream, xml) {
+                        node.deviceConfig.cam.relativeMove(options, function(err, stream, xml) {
                             utils.handleResult(node, err, stream, xml, newMsg);
                         });
                         
