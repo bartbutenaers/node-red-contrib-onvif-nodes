@@ -76,7 +76,7 @@
                         break;
                     case "getHostname":
                         node.deviceConfig.cam.getHostname(function(err, date, xml) {
-                            utils.handleResult(node, err, stream, xml, newMsg);
+                            utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;               
                     case "getSystemDateAndTime":
