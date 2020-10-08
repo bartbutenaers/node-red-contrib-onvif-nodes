@@ -45,23 +45,25 @@ exports.setNodeStatus = function(node, serviceName, onvifStatus) {
 
 exports.handleResult = function(node, err, date, xml, newMsg) {
     if (err) {
-        console.error(err.message);
+        node.error(err.message);
 
         var lowercase = err.message.toLowerCase();
         
         // Sometimes the OnVif device responds with errors like "Method Not Found", "Action Not Implemented", ... 
         // In that case we will show an error indicating that the action is not supported by the device.
-        if (lowercase.includes("not found") || lowercase.includes("not implemented")) {
-            node.status({fill:"red",shape:"dot",text: "unsupported action"});
-        }
-        else {
-            node.status({fill:"red",shape:"dot",text: "failed"});
-        }
+        // WE WON'T SET A TEMPORARY NODE STATUS, BECAUSE OTHERWISE WE SHOULD SHOW THE ORIGINAL STATUS AGAIN AFTER SOME TIME
+        // (WHICH IS NOT RELEVANT)/ see https://github.com/bartbutenaers/node-red-contrib-onvif-nodes/issues/12
+        //if (lowercase.includes("not found") || lowercase.includes("not implemented")) {
+        //    node.status({fill:"red",shape:"dot",text: "unsupported action"});
+        //}
+        //else {
+        //    node.status({fill:"red",shape:"dot",text: "failed"});
+        //}
     }
     else {
         if (newMsg) {
             newMsg.payload = date;
             node.send(newMsg);
         }
-    }
+    } 
 }
