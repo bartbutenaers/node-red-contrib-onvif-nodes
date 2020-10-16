@@ -1,7 +1,7 @@
 # node-red-contrib-onvif-nodes
 Node Red nodes for communicating with OnVif compliant IP devices
 
-**THIS IS AN EXPERIMENTAL NODE-RED CONTRIBUTION.  API WILL BE CHANGED SOON !!!**
+**THIS IS AN EXPERIMENTAL NODE-RED CONTRIBUTION.  API WILL BE CHANGED  !!!**
 
 **SEE THIS [DISCUSSION](https://discourse.nodered.org/t/onvif-camera-control/6888) ON THE NODE-RED FORUM FOR LATEST INFORMATION**
 
@@ -12,10 +12,11 @@ Node Red nodes for communicating with OnVif compliant IP devices
 ***TODO: Discuss how we can have user friendly config screens, to get a usable set of nodes (without needing great tools like ONVIF Device Manager.***
 
 ## Install
-Run the following npm command in your Node-RED user directory (typically ~/.node-red):
+Run the following npm command in your Node-RED user directory (typically ~/.node-red), to install this node directly from my Github repository:
 ```
-npm install node-red-contrib-onvif-nodes@0.0.1-beta.7
+npm install bartbutenaers/node-red-contrib-onvif-nodes
 ```
+Note: the beta version on NPM is obsolete, so don't use it!!!
 
 ## Support my Node-RED developments
 
