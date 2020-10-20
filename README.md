@@ -16,7 +16,7 @@ Run the following npm command in your Node-RED user directory (typically ~/.node
 ```
 npm install bartbutenaers/node-red-contrib-onvif-nodes
 ```
-Note: the beta version on NPM is obsolete, so don't use it!!!
+Note: the beta version on NPM is obsolete, so don't use it!!!  And ***git*** needs to be installed, otherwise the above command won't work!
 
 ## Support my Node-RED developments
 
