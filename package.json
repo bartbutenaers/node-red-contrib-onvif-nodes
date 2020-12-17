@@ -1,6 +1,6 @@
 {
     "name"         : "node-red-contrib-onvif-nodes",
-    "version"      : "0.0.1-beta.10",
+    "version"      : "0.0.1-beta.11",
     "description"  : "Node Red nodes for communicating with OnVif compliant IP devices",
     "dependencies": {
        "onvif": "https://github.com/agsh/onvif.git",
