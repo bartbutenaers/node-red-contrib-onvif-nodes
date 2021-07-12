@@ -50,28 +50,32 @@
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
-                //console.warn('Ignoring input message since the device connection is not complete');
-                return;
-            }
-
-            if (!node.deviceConfig.cam.capabilities['events']) {
-                //console.warn('Ignoring input message since the device does not support the events service');
-                return;
-            }
-            
-            // Seems that some Axis cams support pull point, although they return WSPullPointSupport 'false'
-            /*if (!node.deviceConfig.cam.capabilities.events.WSPullPointSupport == true) {
-                //console.warn('Ignoring input message since the device does not support pull point subscription');
-                return;
-            }*/               
-            
+            // Note: the node's config screen has no 'action' input field yet ...
             var action = node.action || msg.action;
             
             if (!action) {
                 console.warn('When no action specified in the node, it should be specified in the msg.action');
                 return;
             }
+            
+            // Don't perform these checks when e.g. the device is currently disconnected (because then e.g. no capabilities are loaded yet)
+            if (action !== "reconnect") {
+                if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                    //console.warn('Ignoring input message since the device connection is not complete');
+                    return;
+                }
+
+                if (!node.deviceConfig.cam.capabilities['events']) {
+                    //console.warn('Ignoring input message since the device does not support the events service');
+                    return;
+                }
+            }
+            
+            // Seems that some Axis cams support pull point, although they return WSPullPointSupport 'false'
+            /*if (!node.deviceConfig.cam.capabilities.events.WSPullPointSupport == true) {
+                //console.warn('Ignoring input message since the device does not support pull point subscription');
+                return;
+            }*/
             
             newMsg.xaddr = this.deviceConfig.xaddress;
             newMsg.action = action;
@@ -242,6 +246,11 @@
                             utils.handleResult(node, err, date, xml, newMsg);
                         });
                         break;
+                    case "reconnect":
+                        node.deviceConfig.cam.connect(function(err) {
+                            utils.handleResult(node, err, "", null, newMsg);
+                        });
+                        break
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
                         console.log("Action " + action + " is not supported");                    
