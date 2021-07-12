@@ -55,8 +55,12 @@
             node.counter++;
             
             if (node.separate) {
+                // Since the same input message will be resend for every Onvif device found, we need to clone the input message
+                var outputMsg = RED.util.cloneMessage(node.triggerMsg);
+                outputMsg.payload = simplifyResult(result);
+                
                 // Send a separate output message for every discovered OnVif-compliant IP device
-                node.send({payload: simplifyResult(result)}); 
+                node.send(outputMsg); 
             }
         }
         
@@ -69,7 +73,10 @@
                 console.info("Discovery request ignored, since other discovery is active");
                 return;
             }
-            
+
+            // Keep a reference to the message that has triggered the broadcast
+            node.triggerMsg = msg;
+                  
             node.status({fill:"yellow",shape:"dot",text:"discovering"});
             node.counter = 0;
             node.discovering = true;
@@ -99,7 +106,9 @@
                     }
                     
                     // Send a single message, containing an array of ALL discovered OnVif-compliant IP devices
-                    node.send({payload: devices});
+                    var outputMsg = msg;
+                    outputMsg.payload = devices;
+                    node.send(outputMsg);
                 }
                 
                 node.discovering = false;
