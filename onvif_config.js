@@ -25,10 +25,12 @@
 
     function OnVifConfigNode(config) {
         RED.nodes.createNode(this, config);
-        this.xaddress = config.xaddress;
-        this.port     = parseInt(config.port || 80);
-        this.name     = config.name;
-        this.timeout  = config.timeout || 3;
+        this.xaddress              = config.xaddress;
+        this.port                  = parseInt(config.port || 80);
+        this.name                  = config.name;
+        this.timeout               = config.timeout || 3;
+        this.refreshStatus         = config.refreshStatus; 
+        this.refreshStatusInterval = config.refreshStatusInterval || 5;
         // Remark: user name and password are stored in this.credentials
         
         var node = this;
@@ -143,12 +145,40 @@
                     setOnvifStatus(node, "connected"); 
                 }
             });
+            
+            // When an refreshStatus timer is running, then stop it
+            if (this.refreshStatusTimer) {
+                clearInterval(this.refreshStatusTimer);
+                this.refreshStatusTimer = null;
+            }
+            
+            if (this.refreshStatus && this.refreshStatusInterval > 0) {
+                // Start a new refreshStatus timer, that checks at the specified interval whether the Onvif device is disconnected.
+                // This way we can keep the node status in the flow editor up to date ...
+                this.refreshStatusTimer = setInterval(function() {
+                    // Check whether the Onvif device is connected, by calling the device system and time
+                    node.cam.getSystemDateAndTime(function(err, date, xml) {
+                        if (err) {
+                            setOnvifStatus(node, "disconnected");
+                        }
+                        else {
+                            setOnvifStatus(node, "connected");
+                        }
+                    });
+                }, this.refreshStatusInterval * 1000);
+            }
         }
         
         node.on('close', function(){
-			setOnvifStatus(node, "");
+			setOnvifStatus(this, "");
             
-            node.removeAllListeners("onvif_status");
+            this.removeAllListeners("onvif_status");
+            
+            // When an refreshStatus timer is running, then stop it
+            if (this.refreshStatusTimer) {
+                clearInterval(this.refreshStatusTimer);
+                this.refreshStatusTimer = null;
+            }
 		});
     }
     

@@ -18,6 +18,8 @@
             xaddress: {value:"", required:true},
             port: {value:80, required:true},
             timeout: {value: 3, require:true},
+            refreshStatus: {value: true},
+            refreshStatusInterval: {value: 5},
             name: {value:""}
         },   
         credentials: {
@@ -33,7 +35,32 @@
         },
         oneditprepare: function() {
             // Old nodes had no timeout property (which means the default timeout of 12 seconds from the agsh/onvif library was being used)
-            $('#node-config-input-timeout').val(this.timeout || 3);
+            if (this.timeout == undefined) {
+                $('#node-config-input-timeout').val(3);
+            }
+
+            $('#node-config-input-refreshStatus').change(function () {
+                if (this.checked == true) {
+                    $('#node-config-input-refreshStatusInterval').prop('disabled', false);
+                    //$("#appearance-square").css('opacity',"0.4");
+                    //$("#appearance-round").css('opacity',"1");                   
+                }
+                else {
+                    $('#node-config-input-refreshStatusInterval').prop('disabled', true);
+                    //$("#appearance-square").css('opacity',"1");
+                    //$("#appearance-round").css('opacity',"0.4"); 
+                }
+            });
+            
+            // Old nodes had no refreshStatus property
+            if (this.refreshStatus == undefined) {
+                $('#node-config-input-refreshStatus').val(true);
+            }
+       
+            // Old nodes had no autoConnectInterval property
+            if (this.refreshStatusInterval == undefined) {
+                $('#node-config-input-refreshStatusInterval').val(5);
+            }
         }
     });
 </script>
@@ -64,6 +91,13 @@
         <label for="node-config-input-timeout"><i class="icon-tag"></i> Timeout</label>
         <input type="number" id="node-config-input-timeout">
     </div>
+    <div class='form-row'>
+        <label for='node-config-input-refreshStatus'><i class='fa fa-refresh'></i> Refresh</label>
+        <input type='checkbox' id='node-config-input-refreshStatus' style='width:auto ;border:none; vertical-align:baseline;' placeholder='0'>
+        <span> Check connection status every</span>&nbsp;
+        <input type="number" id="node-config-input-refreshStatusInterval" style="width:45px; height:28px;" autocomplete="off" dir="" disabled="disabled">&nbsp;
+        <span>seconds</span>
+    </div> 
 </script>
 
 <script type="text/x-red" data-help-name="onvif-config">
@@ -77,4 +111,6 @@
     An optional password for basic authentication on the target IP device.</p>
     <p><strong>Timeout:</strong><br/>
     Specify how many seconds needs to be waited for an answer, when connecting to an Onvif device.  When no response has been received during the timeout interval, the device will be considered as 'disconnected'.</p>
+    <p><strong>Refresh:</strong><br/>
+    Specify whether the connection status of the Onvif device should be checked periodically, to make sure the node status is up to date (i.e. "connected" or "disconnected").</p>
 </script>
