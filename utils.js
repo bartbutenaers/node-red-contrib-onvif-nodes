@@ -59,11 +59,21 @@ exports.handleResult = function(node, err, date, xml, newMsg) {
         //else {
         //    node.status({fill:"red",shape:"dot",text: "failed"});
         //}
+        
+        // When a reconnect action fails, then the status needs to become 'disconnected' (because that is no temporary status unlike the others)
+        if (newMsg.action = "reconnect") {
+            node.status({fill:"red",shape:"dot",text: "disconnected"});
+        }
     }
     else {
         if (newMsg) {
             newMsg.payload = date;
             node.send(newMsg);
+        }
+        
+        // When a reconnect action succeeds, then the status needs to become 'connected' (because that is no temporary status unlike the others)
+        if (newMsg.action = "reconnect") {
+            node.status({fill:"blue",shape:"dot",text: "connected"});
         }
     } 
 }
