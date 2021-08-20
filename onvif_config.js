@@ -25,12 +25,11 @@
 
     function OnVifConfigNode(config) {
         RED.nodes.createNode(this, config);
-        this.xaddress              = config.xaddress;
-        this.port                  = parseInt(config.port || 80);
-        this.name                  = config.name;
-        this.timeout               = config.timeout || 3;
-        this.refreshStatus         = config.refreshStatus; 
-        this.refreshStatusInterval = config.refreshStatusInterval || 5;
+        this.xaddress                = config.xaddress;
+        this.port                    = parseInt(config.port || 80);
+        this.name                    = config.name;
+        this.timeout                 = config.timeout || 3;
+        this.checkConnectionInterval = config.checkConnectionInterval || 5;
         // Remark: user name and password are stored in this.credentials
         
         var node = this;
@@ -146,26 +145,38 @@
                 }
             });
             
-            // When an refreshStatus timer is running, then stop it
-            if (this.refreshStatusTimer) {
-                clearInterval(this.refreshStatusTimer);
-                this.refreshStatusTimer = null;
+            // When an checkConnection timer is running, then stop it
+            if (this.checkConnectionTimer) {
+                clearInterval(this.checkConnectionTimer);
+                this.checkConnectionTimer = null;
             }
             
-            if (this.refreshStatus && this.refreshStatusInterval > 0) {
-                // Start a new refreshStatus timer, that checks at the specified interval whether the Onvif device is disconnected.
+            if (this.checkConnectionInterval > 0) {
+                // Start a new checkConnection timer, that checks at the specified interval whether the Onvif device is disconnected.
                 // This way we can keep the node status in the flow editor up to date ...
-                this.refreshStatusTimer = setInterval(function() {
+                this.checkConnectionTimer = setInterval(function() {
                     // Check whether the Onvif device is connected, by calling the device system and time
                     node.cam.getSystemDateAndTime(function(err, date, xml) {
                         if (err) {
                             setOnvifStatus(node, "disconnected");
                         }
                         else {
+                            if (!node.cam.capabilities) {
+                                // Probably the device was unavailable when this node was being started, so the autoConnect was not able
+                                // to load all the data from the camera (like e.g. its capabilities).  Afterwards the device became available,
+                                // so it is now time to load the device data into the Cam instance (by calling its 'connect' function).
+                                // Note that this needs to be executed before setOnvifStatus, because that function uses the capabilities.
+                                node.cam.connect(function(err, date, xml) {
+                                    if (err) {
+                                        node.error("The device is now connected, but the data cannot be loaded");
+                                    }
+                                });
+                            }
+                            
                             setOnvifStatus(node, "connected");
                         }
                     });
-                }, this.refreshStatusInterval * 1000);
+                }, this.checkConnectionInterval * 1000);
             }
         }
         
@@ -174,10 +185,10 @@
             
             this.removeAllListeners("onvif_status");
             
-            // When an refreshStatus timer is running, then stop it
-            if (this.refreshStatusTimer) {
-                clearInterval(this.refreshStatusTimer);
-                this.refreshStatusTimer = null;
+            // When an checkConnection timer is running, then stop it
+            if (this.checkConnectionTimer) {
+                clearInterval(this.checkConnectionTimer);
+                this.checkConnectionTimer = null;
             }
 		});
     }
