@@ -17,6 +17,7 @@
         defaults: {
             xaddress: {value:"", required:true},
             port: {value:80, required:true},
+            timeout: {value: 3, require:true},
             name: {value:""}
         },   
         credentials: {
@@ -29,6 +30,10 @@
         label: function() {
             // The (unique) name will also be displayed in the drop-down list, used by the related nodes
             return this.name || this.xaddress || "OnVif device config";
+        },
+        oneditprepare: function() {
+            // Old nodes had no timeout property (which means the default timeout of 12 seconds from the agsh/onvif library was being used)
+            $('#node-config-input-timeout').val(this.timeout || 3);
         }
     });
 </script>
@@ -55,6 +60,10 @@
         <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-config-input-name" placeholder="Name">
     </div>
+    <div class="form-row">
+        <label for="node-config-input-timeout"><i class="icon-tag"></i> Timeout</label>
+        <input type="number" id="node-config-input-timeout">
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="onvif-config">
@@ -66,4 +75,6 @@
     An optional user name for basic authentication on the target IP device.</p>
     <p><strong>Password:</strong><br/>
     An optional password for basic authentication on the target IP device.</p>
+    <p><strong>Timeout:</strong><br/>
+    Specify how many seconds needs to be waited for an answer, when connecting to an Onvif device.  When no response has been received during the timeout interval, the device will be considered as 'disconnected'.</p>
 </script>

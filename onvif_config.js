@@ -19,7 +19,6 @@
     
     function setOnvifStatus(node, onvifStatus) {
         node.onvifStatus = onvifStatus;
-        
         // Pass the new status to all the available listeners
         node.emit('onvif_status', onvifStatus);
     }
@@ -29,6 +28,7 @@
         this.xaddress = config.xaddress;
         this.port     = parseInt(config.port || 80);
         this.name     = config.name;
+        this.timeout  = config.timeout || 3;
         // Remark: user name and password are stored in this.credentials
         
         var node = this;
@@ -124,6 +124,7 @@
             var options = {};
             options.hostname = this.xaddress;
             options.port = this.port;
+            options.timeout = this.timeout * 1000;
             
             if (this.credentials && this.credentials.user) {
                 options.username = this.credentials.user;
