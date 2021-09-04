@@ -81,12 +81,17 @@
                 timeout: node.timeout, // Discovery should end after the specified timeout
                 resolve: false // Return discovered devices as data objects, instead of Cam instances
             };
+            
+            // The discovery must have an error handler to catch bad replies from the network (which cannot be parsed by this library)
+            onvif.Discovery.on('error', function (err, xml) {
+                node.error('Discovery error ' + err);
+            });
 
             // Start discovery of the ONVIF network devices.
             // The callback function will be called only once, when the broadcast is finished (after the timeout).
             onvif.Discovery.probe(options, function(err, result) {
                 if (err) { 
-                    console.error(err.message);
+                    node.error(err.message);
                     node.status({fill:"red",shape:"dot",text: "failed"});
                 }
                 else {
