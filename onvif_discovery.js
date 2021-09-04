@@ -22,7 +22,6 @@
         this.timeout     = parseInt(config.timeout) * 1000; // Seconds
         this.separate    = config.separate;
         this.discovering = false;
-        this.counter     = 0;
 
         var node = this;
         
@@ -52,8 +51,6 @@
         }
         
         function handleResult(result) {
-            node.counter++;
-            
             if (node.separate) {
                 // Since the same input message will be resend for every Onvif device found, we need to clone the input message
                 var outputMsg = RED.util.cloneMessage(node.triggerMsg);
@@ -78,7 +75,6 @@
             node.triggerMsg = msg;
                   
             node.status({fill:"yellow",shape:"dot",text:"discovering"});
-            node.counter = 0;
             node.discovering = true;
             
             var options = { 
@@ -94,7 +90,7 @@
                     node.status({fill:"red",shape:"dot",text: "failed"});
                 }
                 else {
-                    node.status({fill:"green",shape:"dot",text: "completed (" + node.counter + "x)"});
+                    node.status({fill:"green",shape:"dot",text: "completed (" + result.length + "x)"});
                 }           
                 
                 if (!node.separate) {
@@ -120,7 +116,6 @@
             
             onvif.Discovery.removeListener('device', handleResult);
             
-            node.counter = 0;
             node.discovering = false;
 		});
     }
