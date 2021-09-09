@@ -49,30 +49,12 @@
             
             return probeMatch;
         }
-        
-        function handleResult(result) {
-            if (node.separate) {
-                // Since the same input message will be resend for every Onvif device found, we need to clone the input message
-                var outputMsg = RED.util.cloneMessage(node.triggerMsg);
-                outputMsg.payload = simplifyResult(result);
-                
-                // Send a separate output message for every discovered OnVif-compliant IP device
-                node.send(outputMsg); 
-            }
-        }
-        
-        // Register once a listener for device events.
-        // The callback function will be called immediately when a device responses.
-        onvif.Discovery.on('device', handleResult);
-        
+
         node.on("input", function(msg) {         
             if (node.discovering) {
                 console.info("Discovery request ignored, since other discovery is active");
                 return;
             }
-
-            // Keep a reference to the message that has triggered the broadcast
-            node.triggerMsg = msg;
                   
             node.status({fill:"yellow",shape:"dot",text:"discovering"});
             node.discovering = true;
@@ -82,6 +64,22 @@
                 resolve: false // Return discovered devices as data objects, instead of Cam instances
             };
             
+            // For every discovery we will need to remove all previous ('device' and 'error') listeners, and add new listeners.
+            // See https://discourse.nodered.org/t/object-property-becomes-undefined/50647/2?u=bartbutenaers
+            onvif.Discovery.removeAllListeners();
+            
+            // When a separate output message per device is required, then listen to every separate device being detected
+            if (node.separate) {
+                onvif.Discovery.on('device', function (result) {
+                    // Since the same input message will be resend for every Onvif device found, we need to clone the input message
+                    var outputMsg = RED.util.cloneMessage(msg);
+                    outputMsg.payload = simplifyResult(result);
+                    
+                    // Send a separate output message for every discovered OnVif-compliant IP device
+                    node.send(outputMsg); 
+                });
+            }
+                
             // The discovery must have an error handler to catch bad replies from the network (which cannot be parsed by this library)
             onvif.Discovery.on('error', function (err, xml) {
                 node.error('Discovery error ' + err);
@@ -98,6 +96,7 @@
                     node.status({fill:"green",shape:"dot",text: "completed (" + result.length + "x)"});
                 }           
                 
+                // When a single message needs to be send (containing all discovered devices)...
                 if (!node.separate) {
                     var devices = [];
                     
@@ -118,9 +117,7 @@
         
 		node.on('close', function(){
 			node.status({});
-            
-            onvif.Discovery.removeListener('device', handleResult);
-            
+            onvif.Discovery.removeAllListeners();
             node.discovering = false;
 		});
     }
