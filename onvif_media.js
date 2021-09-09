@@ -37,14 +37,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'media', onvifStatus);
+                utils.setNodeStatus(node, 'media_service', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'media', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'media_service', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -87,27 +87,32 @@
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
-                //console.warn('Ignoring input message since the device connection is not complete');
+            var action = node.action || msg.action;
+
+            if (!action) {
+                // When no action specified in the node, it should be specified in the msg.action
+                node.error("No action specified (in node or msg)");
                 return;
             }
+            
+            // Don't perform these checks when e.g. the device is currently disconnected (because then e.g. no capabilities are loaded yet)
+            if (action !== "reconnect") {
+                if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                    node.error("This node is not connected to a device");
+                    return;
+                }
 
-            if (!node.deviceConfig.cam.capabilities['media']) {
-                //console.warn('Ignoring input message since the device does not support the media service');
-                return;
-            } 
+                if (!utils.hasService(node.deviceConfig.cam, 'media_service')) {
+                    node.error("The device has no support for a media service");
+                    return;
+                }
+            }
        
-            var action = node.action || msg.action;
             var protocol = node.protocol || msg.protocol;
             var stream = node.stream || msg.stream;
             var profileToken = node.profileToken || msg.profileToken;
             var profileName = node.profileName || msg.profileName;
             var videoEncoderConfigToken = node.videoEncoderConfigToken || msg.videoEncoderConfigToken;
-            
-            if (!action) {
-                console.warn('When no action specified in the node, it should be specified in the msg.action');
-                return;
-            }
             
             // TODO check this only for actions where profileToken is needed
             // TODO when device disconnected, this gives "Cannot read property '$' of undefined" due to missing videosources...
@@ -308,12 +313,11 @@
                         break;
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
-                        console.log("Action " + action + " is not supported");
+                        node.error("Action " + action + " is not supported");
                 }
             }
             catch (exc) {
-                console.log("Action " + action + " failed:");
-                console.log(exc);
+                node.error("Action " + action + " failed: " + exc);
             }
         });
         

@@ -16,6 +16,7 @@
  module.exports = function(RED) {
     var settings = RED.settings;
     const onvif  = require('onvif');
+    const utils = require('./utils');
 
     function OnVifRecordingNode(config) {
         RED.nodes.createNode(this, config);
@@ -27,14 +28,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'recording', onvifStatus);
+                utils.setNodeStatus(node, 'recording_service', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'recording', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'recording_service', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -43,12 +44,12 @@
             var newMsg = {};
             
             if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
-                //console.warn('Ignoring input message since the device connection is not complete');
+                node.error("This node is not connected to a device");
                 return;
             }
 
-            if (!node.deviceConfig.cam.capabilities['recording']) {
-                //console.warn('Ignoring input message since the device does not support the recording service');
+            if (!utils.hasService(node.deviceConfig.cam, 'recording_service')) {
+                node.error("The device does no support for a recording service");
                 return;
             }
 

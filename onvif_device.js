@@ -29,14 +29,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'device', onvifStatus);
+                utils.setNodeStatus(node, 'device_service', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'device', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'device_service', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -54,12 +54,12 @@
             // Don't perform these checks when e.g. the device is currently disconnected (because then e.g. no capabilities are loaded yet)
             if (action !== "reconnect") {
                 if (!node.deviceConfig || node.deviceConfig.onvifStatus !== "connected") {
-                    //console.warn('Ignoring input message since the device connection is not complete');
+                    node.error("This node is not connected to a device");
                     return;
                 }
 
-                if (!node.deviceConfig.cam.capabilities['device']) {
-                    //console.warn('Ignoring input message since the device does not support the device service');
+                if (!utils.hasService(node.deviceConfig.cam, 'device_service')) {
+                    node.error("The device has no support for a device service");
                     return;
                 }
             }
@@ -116,12 +116,11 @@
                         break
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
-                        console.log("Action " + action + " is not supported");                    
+                        node.error("Action " + action + " is not supported");                    
                 }
             }
             catch (exc) {
-                console.log("Action " + action + " failed:");
-                console.log(exc);
+                node.error("Action " + action + " failed: " + exc);
             }
         });
         

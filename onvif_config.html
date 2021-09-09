@@ -17,7 +17,7 @@
         defaults: {
             xaddress: {value:"", required:true},
             port: {value:80, required:true},
-            timeout: {value: 3, require:true},
+            timeout: {value: 30, require:true}, // Default is otherwise 120 sec in agsh/onvif
             checkConnectionInterval: {value: 5},
             name: {value:""}
         },   
@@ -48,7 +48,7 @@
 
 <script type="text/x-red" data-template-name="onvif-config">
     <div class="form-row">
-        <label for="node-config-input-xaddress"><i class="fa fa-globe"></i> IP address</label>
+        <label for="node-config-input-xaddress"><i class="fa fa-globe"></i> IP address (or hostname)</label>
         <input type="text" id="node-config-input-xaddress">
     </div>
     <div class="form-row">
@@ -63,11 +63,6 @@
         <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
         <input type="password" id="node-config-input-password">
     </div>
-    <br>
-    <div class="form-row">
-        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-config-input-name" placeholder="Name">
-    </div>
     <div class="form-row">
         <label for="node-config-input-timeout"><i class="icon-tag"></i> Timeout</label>
         <input type="number" id="node-config-input-timeout">
@@ -77,14 +72,19 @@
         <span>Check connection status every</span>&nbsp;
         <input type="number" id="node-config-input-checkConnectionInterval" style="width:45px; height:28px;" autocomplete="off" dir="">&nbsp;
         <span>seconds</span>
-    </div> 
+    </div>
+    </br>
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
 </script>
 
 <script type="text/x-red" data-help-name="onvif-config">
-    <p><strong>IP address:</strong><br/>
-    The IP address of the required endpoint on the target IP device.  When you don't know the IP address of your Onvif device, use the Onvif-Discovery: the <code>XAddrs</code> field contains a list of all the IP addresses.</p>
+    <p><strong>IP address (or hostname):</strong><br/>
+    The IP address (or hostname) of the Onvif endpoint on the target IP device.  When you don't know the IP address of your Onvif device, use the Onvif-Discovery: the <code>XAddrs</code> field contains a list of all the IP addresses.</p>
     <p><strong>Port:</strong><br/>
-    The IP address of the required endpoint on the target IP device.  Those port numbers can also be found via the Discovery node, in the same <code>XAddrs</code> field.</p>
+    The port number of the Onvif endpoint on the target IP device.  Those port numbers can also be found via the Discovery node, in the same <code>XAddrs</code> field.</p>
     <p><strong>User name:</strong><br/>
     An optional user name for basic authentication on the target IP device.</p>
     <p><strong>Password:</strong><br/>
@@ -92,5 +92,5 @@
     <p><strong>Timeout:</strong><br/>
     Specify how many seconds needs to be waited for an answer, when connecting to an Onvif device.  When no response has been received during the timeout interval, the device will be considered as 'disconnected'.</p>
     <p><strong>Refresh:</strong><br/>
-    Specify at which interval (in seconds) the connection to the Onvif device should be checked, to make sure both the node status and the device data are up to date.</p>
+    Specify at which interval (in seconds) the connection to the Onvif device should be checked, to make sure both the node status and the device data are up to date.  Note that an interval of 0 seconds is used to disable automatic checking the device connection.</p>
 </script>

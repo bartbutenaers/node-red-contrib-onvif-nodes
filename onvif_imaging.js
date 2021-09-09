@@ -29,14 +29,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'imaging', onvifStatus);
+                utils.setNodeStatus(node, 'imaging_service', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'imaging', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'imaging_service', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -44,21 +44,25 @@
         node.on("input", function(msg) {  
             var newMsg = {};
             
-            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
-                //console.warn('Ignoring input message since the device connection is not complete');
+            var action = node.action || msg.action;
+
+            if (!action) {
+                // When no action specified in the node, it should be specified in the msg.action
+                node.error("No action specified (in node or msg)");
                 return;
             }
+            
+            // Don't perform these checks when e.g. the device is currently disconnected (because then e.g. no capabilities are loaded yet)
+            if (action !== "reconnect") {
+                if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                    node.error("This node is not connected to a device");
+                    return;
+                }
 
-            if (!node.deviceConfig.cam.capabilities['imaging']) {
-                //console.warn('Ignoring input message since the device does not support the imaging service');
-                return;
-            } 
-            
-            var action = node.action || msg.action;
-            
-            if (!action) {
-                console.warn('When no action specified in the node, it should be specified in the msg.action');
-                return;
+                if (!utils.hasService(node.deviceConfig.cam, 'imaging_service')) {
+                    node.error("The device has no support for a ptz service");
+                    return;
+                }
             }
 
             newMsg.xaddr = this.deviceConfig.xaddress;
@@ -127,7 +131,7 @@
                         // TODO we should be able to specify (in the options) the video source token, because by default the active video source will be updated.
                         
                         if (Object.keys(options).length === 0) {
-                            console.error('No image settings have been specified.'); 
+                            node.error('No image settings have been specified.'); 
                             return;
                         }
             
@@ -145,12 +149,11 @@
                         break;
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
-                        console.log("Action " + action + " is not supported");
+                        node.error("Action " + action + " is not supported");
                 }
             }
             catch (exc) {
-                console.log("Action " + action + " failed:");
-                console.log(exc);
+                node.error("Action " + action + " failed: " + exc);
             }
         });
         

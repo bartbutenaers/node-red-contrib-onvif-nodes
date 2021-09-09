@@ -29,11 +29,11 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'device', onvifStatus);
+                utils.setNodeStatus(node, 'event_service', onvifStatus);
                 
                 if (onvifStatus !== "connected" && node.eventListener) {
                     // When the device isn't connected anymore, stop listening to events from the camera
-                    node.deviceConfig.cam.removeListener('event', node.eventListener);
+                    node.deviceConfig.cam.removeListener('events', node.eventListener);
                     node.eventListener = null;
                 }
             }
@@ -42,7 +42,7 @@
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'device', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'event_service', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -54,19 +54,20 @@
             var action = node.action || msg.action;
             
             if (!action) {
-                console.warn('When no action specified in the node, it should be specified in the msg.action');
+                // When no action specified in the node, it should be specified in the msg.action
+                node.error("No action specified (in node or msg)");
                 return;
             }
             
             // Don't perform these checks when e.g. the device is currently disconnected (because then e.g. no capabilities are loaded yet)
             if (action !== "reconnect") {
                 if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
-                    //console.warn('Ignoring input message since the device connection is not complete');
+                    node.error("This node is not connected to a device");
                     return;
                 }
 
-                if (!node.deviceConfig.cam.capabilities['events']) {
-                    //console.warn('Ignoring input message since the device does not support the events service');
+                if (!utils.hasService(node.deviceConfig.cam, 'event_service')) {
+                    node.error("The device has no support for an event service");
                     return;
                 }
             }
@@ -84,7 +85,7 @@
                 switch (action) {
                     case "start":
                         if (node.eventListener) {
-                            console.warn("The node is already listening to events");
+                            node.error("This node is already listening to device events");
                             return;
                         }
                         
@@ -191,7 +192,7 @@
                         break;
                     case "stop":
                         if (!node.eventListener) {
-                            console.warn("The node was not listening to events anyway");
+                            node.error("This node was not listening to events anyway");
                             return;
                         }
 
@@ -253,12 +254,11 @@
                         break
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
-                        console.log("Action " + action + " is not supported");                    
+                        node.error("Action " + action + " is not supported");                   
                 }
             }
             catch (exc) {
-                console.log("Action " + action + " failed:");
-                console.log(exc);
+                node.error("Action " + action + " failed: " + exc);
             }
         });
         

@@ -45,14 +45,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'PTZ', onvifStatus);
+                utils.setNodeStatus(node, 'ptz_service', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'PTZ', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'ptz_service', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -77,22 +77,26 @@
             var configurationToken = node.configurationToken;
             
             var action = node.action || msg.action;
-            
-            if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
-                //console.warn('Ignoring input message since the device connection is not complete');
+
+            if (!action) {
+                // When no action specified in the node, it should be specified in the msg.action
+                node.error("No action specified (in node or msg)");
                 return;
+            }
+            
+            // Don't perform these checks when e.g. the device is currently disconnected (because then e.g. no capabilities are loaded yet)
+            if (action !== "reconnect") {
+                if (!node.deviceConfig || node.deviceConfig.onvifStatus != "connected") {
+                    node.error("This node is not connected to a device");
+                    return;
+                }
+
+                if (!utils.hasService(node.deviceConfig.cam, 'ptz_service')) {
+                    node.error("The device has no support for a ptz service");
+                    return;
+                }
             }
 
-            if (!node.deviceConfig.cam.capabilities['PTZ']) {
-                //console.warn('Ignoring input message since the device does not support the media service');
-                return;
-            }
-            
-            if (!action) {
-                console.warn('When no action specified in the node, it should be specified in the msg.action');
-                return;
-            }
-            
             var preset = node.preset || msg.preset; 
             var presetName = node.presetName || msg.presetName;
             
@@ -110,7 +114,7 @@
             // Check whether a 'pan_speed' value is specified in the input message
             if (msg.hasOwnProperty('pan_speed') || msg.pan_speed < -1.0 || msg.pan_speed > 1.0) {
                 if (isNaN(msg.pan_speed)) {
-                    console.error('The msg.pan_speed value should be a number between -1.0 and 1.0');
+                    node.error('The msg.pan_speed value should be a number between -1.0 and 1.0');
                 }
                 else {
                     panSpeed = msg.pan_speed;
@@ -120,7 +124,7 @@
             // Check whether a 'tilt_speed' value is specified in the input message
             if (msg.hasOwnProperty('tilt_speed') || msg.tilt_speed < -1.0 || msg.tilt_speed > 1.0) {
                 if (isNaN(msg.tilt_speed)) {
-                    console.error('The msg.tilt_speed value should be a number between -1.0 and 1.0');
+                    node.error('The msg.tilt_speed value should be a number between -1.0 and 1.0');
                 }
                 else {
                     tiltSpeed = msg.tilt_speed;
@@ -130,7 +134,7 @@
             // Check whether a 'zoom_speed' value is specified in the input message
             if (msg.hasOwnProperty('zoom_speed')) {
                 if (isNaN(msg.zoom_speed) || msg.zoom_speed < -1.0 || msg.zoom_speed > 1.0) {
-                    console.error('The msg.zoom_speed value should be a number between -1.0 and 1.0');
+                    node.error('The msg.zoom_speed value should be a number between -1.0 and 1.0');
                 }
                 else {
                     zoomSpeed = msg.zoom_speed;
@@ -140,7 +144,7 @@
             // Check whether a 'pan_position' value is specified in the input message
             if (msg.hasOwnProperty('pan_position') /*TODO CHECK VIA PROFILE RANGE  || msg.pan_position < -1.0 || msg.pan_position > 1.0*/) {
                 if (isNaN(msg.pan_position)) {
-                    console.error('The msg.pan_position value should be a number between ?? and ??'); // TODO find boundaries in profile
+                    node.error('The msg.pan_position value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
                     panPosition = msg.pan_position;
@@ -150,7 +154,7 @@
             // Check whether a 'tilt_position' value is specified in the input message
             if (msg.hasOwnProperty('tilt_position') /*TODO CHECK VIA PROFILE RANGE  || msg.tilt_position < -1.0 || msg.tilt_position > 1.0*/) {
                 if (isNaN(msg.tilt_position)) {
-                    console.error('The msg.tilt_position value should be a number between ?? and ??'); // TODO find boundaries in profile
+                    node.error('The msg.tilt_position value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
                     tiltPosition = msg.tilt_position;
@@ -160,7 +164,7 @@
             // Check whether a 'zoom_position' value is specified in the input message
             if (msg.hasOwnProperty('zoom_position') /*TODO CHECK VIA PROFILE RANGE  || msg.zoom_position < -1.0 || msg.zoom_position > 1.0*/) {
                 if (isNaN(msg.zoom_position)) {
-                    console.error('The msg.zoom_position value should be a number between ?? and ??'); // TODO find boundaries in profile
+                    node.error('The msg.zoom_position value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
                     zoomPosition = msg.zoom_position;
@@ -170,7 +174,7 @@
             // Check whether a 'pan_translation' value is specified in the input message
             if (msg.hasOwnProperty('pan_translation') /*TODO CHECK VIA PROFILE RANGE  || msg.pan_translation < -1.0 || msg.pan_translation > 1.0*/) {
                 if (isNaN(msg.pan_translation)) {
-                    console.error('The msg.pan_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
+                    node.error('The msg.pan_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
                     panTranslation = msg.pan_translation;
@@ -180,7 +184,7 @@
             // Check whether a 'tilt_translation' value is specified in the input message
             if (msg.hasOwnProperty('tilt_translation') /*TODO CHECK VIA PROFILE RANGE  || msg.tilt_translation < -1.0 || msg.tilt_translation > 1.0*/) {
                 if (isNaN(msg.tilt_translation)) {
-                    console.error('The msg.tilt_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
+                    node.error('The msg.tilt_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
                     tiltTranslation = msg.tilt_translation;
@@ -190,7 +194,7 @@
             // Check whether a 'zoom_translation' value is specified in the input message
             if (msg.hasOwnProperty('zoom_translation') /*TODO CHECK VIA PROFILE RANGE  || msg.zoom_translation < -1.0 || msg.zoom_translation > 1.0*/) {
                 if (isNaN(msg.zoom_translation)) {
-                    console.error('The msg.zoom_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
+                    node.error('The msg.zoom_translation value should be a number between ?? and ??'); // TODO find boundaries in profile
                 }
                 else {
                     zoomTranslation = msg.zoom_translation;
@@ -462,12 +466,11 @@
                         break;
                     default:
                         //node.status({fill:"red",shape:"dot",text: "unsupported action"});
-                        console.log("Action " + action + " is not supported");
+                        node.error("Action " + action + " is not supported");
                 }
             }
             catch (exc) {
-                console.log("Action " + action + " failed:");
-                console.log(exc);
+                node.error("Action " + action + " failed: " + exc);
             }
         });
         

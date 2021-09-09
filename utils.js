@@ -25,14 +25,20 @@ exports.setNodeStatus = function(node, serviceName, onvifStatus) {
             node.status({fill:"red",shape:"ring",text:onvifStatus});
             break;
         case "connected":
-            var service = node.deviceConfig.cam.capabilities[serviceName];
-                
-            // When connected to the Onvif device, check whether it supports the specified service
-            if (service && service.XAddr) {
-                node.status({fill:"green",shape:"dot",text:onvifStatus}); 
+            // Starting from agsh/onvif version  0.6.5, the cam.capabilities have become obsolete.
+            // Use services instead.  See pull request https://github.com/agsh/onvif/pull/155
+            // When the cam doesn't offer services, the agsh/onvif library has a fallback to the obsolete capabilities.
+            if (node.deviceConfig.cam.services || node.deviceConfig.cam.capabilities) {
+                // When connected to the Onvif device, the status depends on whether the device supports the specified service
+                if (exports.hasService(node.deviceConfig.cam, serviceName)) {
+                    node.status({fill:"green",shape:"dot",text:onvifStatus}); 
+                }
+                else {
+                    node.status({fill:"red",shape:"ring",text:"unsupported"});  
+                }
             }
             else {
-                node.status({fill:"red",shape:"ring",text:"unsupported"});  
+                node.status({fill:"red",shape:"ring",text:"no services"});
             }
             break;
         case "":
@@ -61,7 +67,7 @@ exports.handleResult = function(node, err, date, xml, newMsg) {
         //}
         
         // When a reconnect action fails, then the status needs to become 'disconnected' (because that is no temporary status unlike the others)
-        if (newMsg.action = "reconnect") {
+        if (newMsg.action == "reconnect") {
             node.status({fill:"red",shape:"dot",text: "disconnected"});
         }
     }
@@ -72,8 +78,29 @@ exports.handleResult = function(node, err, date, xml, newMsg) {
         }
         
         // When a reconnect action succeeds, then the status needs to become 'connected' (because that is no temporary status unlike the others)
-        if (newMsg.action = "reconnect") {
+        if (newMsg.action == "reconnect") {
             node.status({fill:"blue",shape:"dot",text: "connected"});
         }
     } 
+}
+
+exports.hasService = function (cam, serviceName) {
+    if (cam.services) {
+        // Check whether there is a service available, whose XAddr ends with the specified service name
+        return cam.services.some(function (service) {
+            return service.XAddr && service.XAddr.toLowerCase().endsWith(serviceName.toLowerCase());
+        });
+    }
+    else if (cam.capabilities) {
+        serviceName = serviceName.replace("_service", "");
+        
+        // When the cam doesn't offer services, the agsh/onvif library has a fallback to the obsolete capabilities
+        return Object.keys(cam.capabilities).some(function (capabilityName) {
+            var service = cam.capabilities[capabilityName];
+            return service.XAddr && capabilityName.toLowerCase().endsWith(serviceName.toLowerCase());
+        });
+    }
+    else {
+        return false;
+    }
 }
