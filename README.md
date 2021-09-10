@@ -103,7 +103,7 @@ As long as the discovery process is active, no second discovery process can be s
 
 ## Config node
 The config node contains all information required to connect to an Onvif device:
-+ IP address: When you don't know the IP address of your Onvif nodes, please see the Discovery node above.
++ IP address (or hostname): Specify either the IP address or the host (domain) name of the Onvif device.  When you don't know the IP address of your Onvif nodes, please see the Discovery node above.
 + Port: When you don't know the IP address of your Onvif nodes, please see the Discovery node above.  If no port number visible, use port ```80``` by default.
 + Username: Optional but highly advised to secure your camera by username/password credentials.
 + Password: Optional but highly advised to secure your camera by username/password credentials.
