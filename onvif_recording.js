@@ -28,14 +28,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'recording_service', onvifStatus);
+                utils.setNodeStatus(node, 'recording', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'recording_service', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'recording', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -48,7 +48,7 @@
                 return;
             }
 
-            if (!utils.hasService(node.deviceConfig.cam, 'recording_service')) {
+            if (!utils.hasService(node.deviceConfig.cam, 'recording')) {
                 node.error("The device does no support for a recording service");
                 return;
             }

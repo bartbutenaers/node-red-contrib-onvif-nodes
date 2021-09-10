@@ -88,16 +88,14 @@ exports.hasService = function (cam, serviceName) {
     if (cam.services) {
         // Check whether there is a service available, whose XAddr ends with the specified service name
         return cam.services.some(function (service) {
-            return service.XAddr && service.XAddr.toLowerCase().endsWith(serviceName.toLowerCase());
+            return service.XAddr && service.XAddr.toLowerCase().includes(serviceName.toLowerCase());
         });
     }
     else if (cam.capabilities) {
-        serviceName = serviceName.replace("_service", "");
-        
         // When the cam doesn't offer services, the agsh/onvif library has a fallback to the obsolete capabilities
         return Object.keys(cam.capabilities).some(function (capabilityName) {
             var service = cam.capabilities[capabilityName];
-            return service.XAddr && capabilityName.toLowerCase().endsWith(serviceName.toLowerCase());
+            return service.XAddr && capabilityName.toLowerCase().includes(serviceName.toLowerCase());
         });
     }
     else {

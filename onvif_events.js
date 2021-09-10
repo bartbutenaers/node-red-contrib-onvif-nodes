@@ -29,7 +29,7 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'event_service', onvifStatus);
+                utils.setNodeStatus(node, 'event', onvifStatus);
                 
                 if (onvifStatus !== "connected" && node.eventListener) {
                     // When the device isn't connected anymore, stop listening to events from the camera
@@ -42,7 +42,7 @@
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'event_service', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'event', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -66,7 +66,7 @@
                     return;
                 }
 
-                if (!utils.hasService(node.deviceConfig.cam, 'event_service')) {
+                if (!utils.hasService(node.deviceConfig.cam, 'event')) {
                     node.error("The device has no support for an event service");
                     return;
                 }

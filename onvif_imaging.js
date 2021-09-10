@@ -29,14 +29,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'imaging_service', onvifStatus);
+                utils.setNodeStatus(node, 'imaging', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'imaging_service', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'imaging', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -59,8 +59,8 @@
                     return;
                 }
 
-                if (!utils.hasService(node.deviceConfig.cam, 'imaging_service')) {
-                    node.error("The device has no support for a ptz service");
+                if (!utils.hasService(node.deviceConfig.cam, 'imaging')) {
+                    node.error("The device has no support for an imaging service");
                     return;
                 }
             }

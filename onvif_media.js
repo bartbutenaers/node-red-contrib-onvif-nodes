@@ -37,14 +37,14 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'media_service', onvifStatus);
+                utils.setNodeStatus(node, 'media', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
             node.deviceConfig.addListener("onvif_status", node.listener);
             
             // Show the current Onvif config node status already
-            utils.setNodeStatus(node, 'media_service', node.deviceConfig.onvifStatus);
+            utils.setNodeStatus(node, 'media', node.deviceConfig.onvifStatus);
             
             node.deviceConfig.initialize();
         }
@@ -102,7 +102,7 @@
                     return;
                 }
 
-                if (!utils.hasService(node.deviceConfig.cam, 'media_service')) {
+                if (!utils.hasService(node.deviceConfig.cam, 'media')) {
                     node.error("The device has no support for a media service");
                     return;
                 }
