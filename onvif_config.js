@@ -161,7 +161,7 @@
                             setOnvifStatus(node, "disconnected");
                         }
                         else {
-                            if (!node.cam.capabilities) {
+                            if (!node.cam.capabilities && !node.cam.services) {
                                 // Probably the device was unavailable when this node was being started, so the autoConnect was not able
                                 // to load all the data from the camera (like e.g. its capabilities).  Afterwards the device became available,
                                 // so it is now time to load the device data into the Cam instance (by calling its 'connect' function).
