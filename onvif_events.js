@@ -29,13 +29,20 @@
         
         if (node.deviceConfig) {
             node.listener = function(onvifStatus) {
-                utils.setNodeStatus(node, 'event', onvifStatus);
-                
                 if (onvifStatus !== "connected" && node.eventListener) {
                     // When the device isn't connected anymore, stop listening to events from the camera
                     node.deviceConfig.cam.removeListener('events', node.eventListener);
                     node.eventListener = null;
                 }
+                
+                // When we are listening, show the status "listening" instead of connected
+                if (onvifStatus === "connected") {
+                    if (node.eventListener) {
+                        onvifStatus = "listening"
+                    }
+                }
+                
+                utils.setNodeStatus(node, 'event', onvifStatus);
             }
             
             // Start listening for Onvif config nodes status changes
@@ -90,7 +97,7 @@
                         }
                         
                         // Overwrite the device status text
-                        node.status({fill:"green",shape:"dot",text:"listening"}); 
+                        utils.setNodeStatus(node, 'event',"listening");
                         
                         node.eventListener = function(camMessage) {
                             var sourceName  = null;
@@ -200,8 +207,8 @@
                         node.deviceConfig.cam.removeListener('event', node.eventListener);
                         node.eventListener = null;
                         
-                        // Overwrite the device status text
-                        node.status({fill:"green",shape:"ring",text:"not listening"}); 
+                        // When we stop listening, just show status "connected"
+                        utils.setNodeStatus(node, 'event', "connected");
                         break;               
                     case "getEventProperties":
                         node.deviceConfig.cam.getEventProperties(function(err, date, xml) {
@@ -266,7 +273,7 @@
             if (node.listener) {
                 node.deviceConfig.removeListener("onvif_status", node.listener);
             }
-            
+
             // Stop listening to events from the camera
             if (node.eventListener) {
                 node.deviceConfig.cam.removeListener('event', node.eventListener);

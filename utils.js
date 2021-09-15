@@ -41,6 +41,9 @@ exports.setNodeStatus = function(node, serviceName, onvifStatus) {
                 node.status({fill:"red",shape:"ring",text:"no services"});
             }
             break;
+        case "listening":
+            node.status({fill:"green",shape:"dot",text:"listening"});
+            break;
         case "":
             node.status({});
             break;
