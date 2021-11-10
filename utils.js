@@ -86,10 +86,19 @@ exports.handleResult = function(node, err, date, xml, newMsg) {
 
 exports.hasService = function (cam, serviceName) {
     if (cam.services) {
-        // Check whether there is a service available, whose XAddr ends with the specified service name
-        return cam.services.some(function (service) {
+        // Check whether there is a service available, whose XAddr contains the specified service name
+        var hasService = cam.services.some(function (service) {
             return service.XAddr && service.XAddr.toLowerCase().includes(serviceName.toLowerCase());
         });
+        
+        if (!hasService) {
+            // Check whether there is a service available, whose namespace contains the specified service name
+            hasService = cam.services.some(function (service) {
+                return service.namespace && service.namespace.toLowerCase().includes(serviceName.toLowerCase());
+            });
+        }
+        
+        return hasService;
     }
     else if (cam.capabilities) {
         // When the cam doesn't offer services, the agsh/onvif library has a fallback to the obsolete capabilities
