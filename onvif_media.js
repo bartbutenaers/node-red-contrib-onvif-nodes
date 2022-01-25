@@ -233,7 +233,7 @@
                             };
 
                             node.deviceConfig.cam.getSnapshotUri(options, function(err, stream, xml) {
-                                utils.handleResult(node, err, stream, xml, null);
+                                utils.handleResult(node, err, stream, xml, newMsg);
                                 
                                 if (!err) {
                                     // Cache the URL for the next time
