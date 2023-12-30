@@ -356,6 +356,14 @@ While a PTZ camera has only a single home position, it will also have multiple p
 
 You could for example set a separate preset position for every of the 3 doors in your room. And afterwards the Node-RED flow could repeat looping over all 3 preset positions, so the camera would be repositioned in time. 
 
+For the `getPresets` command, the output message will contain a list of key-value pairs:
+
+![getPresets](https://github.com/bartbutenaers/node-red-contrib-onvif-nodes/assets/14224149/d010f9ce-b78d-4948-87e0-dac5a6615625)
+
+Normally Onvif requires the ***preset token*** to be passed in every preset-related command.  However because it is easier to work with preset names, all preset-related commands in this node require the ***preset name*** to be passed (and the corresponding preset token will automatically be determined behind the scene).  For example you can tell your cam to go to the preset position with name *"Preset1"* (instead of using the token *"1"*):
+
+![gotoPreset](https://github.com/bartbutenaers/node-red-contrib-onvif-nodes/assets/14224149/208cf1c3-957d-4b9a-9532-5990e9259ed7)
+
 Remark: the Onvif protocol will generate a *token* to unique identify your preset position.  To avoid that every Node-RED flow needs to store all the tokens, this node will do the mapping between the tokens and the unique names (that you could choose yourself).
 
 ### Get PTZ information
