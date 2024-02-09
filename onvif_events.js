@@ -129,7 +129,7 @@
                             var outputMsg = {
                                 topic: eventTopic,
                                 time: camMessage.message.message.$.UtcTime,
-                                property: camMessage.message.message.$.PropertyOperation // Initialized, Deleted or Changed but missing/undefined on the Avigilon 4 channel encode
+                                property: camMessage.message.message.$.PropertyOperation // Initialized, Deleted or Changed but missing/undefined on the Avigilon 4 channel encoder
                             };
 
                             // Only handle simpleItem
