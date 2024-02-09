@@ -129,7 +129,7 @@
                             var outputMsg = {
                                 topic: eventTopic,
                                 time: camMessage.message.message.$.UtcTime,
-                                property: camMessage.message.message.$.PropertyOperation // Initialized, Deleted or Changed but missing/undefined on the Avigilon 4 channel encoder
+                                property: camMessage.message.message.$.PropertyOperation // Initialized, Deleted or Changed but missing/undefined on the Avigilon 4 channel encode
                             };
 
                             // Only handle simpleItem
@@ -162,8 +162,9 @@
                             // DATA (Name:Value)
                             if (camMessage.message.message.data && camMessage.message.message.data.simpleItem) {
                                 if (Array.isArray(camMessage.message.message.data.simpleItem)) {
+                                    outputMsg.data = [];
                                     for (var x  = 0; x < camMessage.message.message.data.simpleItem.length; x++) {
-                                        outputMsg.data = {
+                                        outputMsg.data.push = {
                                             name: camMessage.message.message.data.simpleItem[x].$.Name,
                                             value: camMessage.message.message.data.simpleItem[x].$.Value
                                         }
