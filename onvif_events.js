@@ -164,10 +164,10 @@
                                 if (Array.isArray(camMessage.message.message.data.simpleItem)) {
                                     outputMsg.data = [];
                                     for (var x  = 0; x < camMessage.message.message.data.simpleItem.length; x++) {
-                                        outputMsg.data.push = {
+                                        outputMsg.data.push({
                                             name: camMessage.message.message.data.simpleItem[x].$.Name,
                                             value: camMessage.message.message.data.simpleItem[x].$.Value
-                                        }
+                                        })
                                     }
                                 }
                                 else {
