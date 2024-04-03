@@ -25,9 +25,9 @@ Node Red nodes for communicating with OnVif compliant IP devices
 
 
 ## Install
-Run the following npm command in your Node-RED user directory (typically ~/.node-red), to install the latest beta version of this node:
+Run the following npm command in your Node-RED user directory (typically ~/.node-red), to install the latest beta version of this node from this Github repo:
 ```
-npm install node-red-contrib-onvif-nodes@0.0.1-beta.16
+npm install bartbutenaers/node-red-contrib-onvif-nodes
 ```
 See the [releases](https://github.com/bartbutenaers/node-red-contrib-onvif-nodes/releases) page for an overview of what has changed per release.
 
